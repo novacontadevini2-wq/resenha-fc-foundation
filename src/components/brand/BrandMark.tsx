@@ -9,9 +9,9 @@ interface BrandMarkProps {
 }
 
 const sizes = {
-  sm: { badge: "h-9 w-9 text-[11px]", name: "text-base" },
-  md: { badge: "h-12 w-12 text-sm", name: "text-xl" },
-  lg: { badge: "h-20 w-20 text-lg", name: "text-3xl" },
+  sm: { badge: "size-9", name: "text-base" },
+  md: { badge: "size-12", name: "text-xl" },
+  lg: { badge: "size-20", name: "text-3xl" },
 };
 
 export function BrandMark({ size = "md", className, withName = true, tone = "dark" }: BrandMarkProps) {
@@ -20,12 +20,15 @@ export function BrandMark({ size = "md", className, withName = true, tone = "dar
     <div className={cn("flex items-center gap-3", className)}>
       <div
         className={cn(
-          "flex shrink-0 items-center justify-center rounded-full border-2 border-orange bg-navy-deep font-display font-bold uppercase tracking-wide text-orange",
+          "shrink-0 overflow-hidden rounded-full border-2 border-orange bg-navy-deep",
           s.badge,
         )}
-        aria-hidden
       >
-        RFC
+        <img
+          src="/logotipo%20resenha%20fc.png"
+          alt={`${CLUB.fullName} — logotipo`}
+          className="size-full object-cover"
+        />
       </div>
       {withName ? (
         <div className="leading-tight">
