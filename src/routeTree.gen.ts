@@ -8,62 +8,252 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as AuthenticatedRouteRouteImport } from "./routes/_authenticated/route";
+import { Route as LoginRouteImport } from "./routes/login";
+import { Route as PrimeiroAcessoRouteImport } from "./routes/primeiro-acesso";
+import { Route as RecuperarSenhaRouteImport } from "./routes/recuperar-senha";
+import { Route as AuthenticatedAppAdminRouteImport } from "./routes/_authenticated/app/admin";
+import { Route as AuthenticatedAppJogadoresRouteImport } from "./routes/_authenticated/app/jogadores";
+import { Route as AuthenticatedAppPrincipalRouteImport } from "./routes/_authenticated/app/principal";
+import { Route as AuthenticatedAppSorteioRouteImport } from "./routes/_authenticated/app/sorteio";
+import { Route as AuthenticatedAppTorneiosRouteImport } from "./routes/_authenticated/app/torneios";
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: "/_authenticated",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LoginRoute = LoginRouteImport.update({
+  id: "/login",
+  path: "/login",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const PrimeiroAcessoRoute = PrimeiroAcessoRouteImport.update({
+  id: "/primeiro-acesso",
+  path: "/primeiro-acesso",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({
+  id: "/recuperar-senha",
+  path: "/recuperar-senha",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AuthenticatedAppAdminRoute = AuthenticatedAppAdminRouteImport.update({
+  id: "/app/admin",
+  path: "/app/admin",
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any);
+const AuthenticatedAppJogadoresRoute =
+  AuthenticatedAppJogadoresRouteImport.update({
+    id: "/app/jogadores",
+    path: "/app/jogadores",
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any);
+const AuthenticatedAppPrincipalRoute =
+  AuthenticatedAppPrincipalRouteImport.update({
+    id: "/app/principal",
+    path: "/app/principal",
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any);
+const AuthenticatedAppSorteioRoute = AuthenticatedAppSorteioRouteImport.update({
+  id: "/app/sorteio",
+  path: "/app/sorteio",
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any);
+const AuthenticatedAppTorneiosRoute =
+  AuthenticatedAppTorneiosRouteImport.update({
+    id: "/app/torneios",
+    path: "/app/torneios",
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  "/": typeof IndexRoute;
+  "/login": typeof LoginRoute;
+  "/primeiro-acesso": typeof PrimeiroAcessoRoute;
+  "/recuperar-senha": typeof RecuperarSenhaRoute;
+  "/app/admin": typeof AuthenticatedAppAdminRoute;
+  "/app/jogadores": typeof AuthenticatedAppJogadoresRoute;
+  "/app/principal": typeof AuthenticatedAppPrincipalRoute;
+  "/app/sorteio": typeof AuthenticatedAppSorteioRoute;
+  "/app/torneios": typeof AuthenticatedAppTorneiosRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  "/": typeof IndexRoute;
+  "/login": typeof LoginRoute;
+  "/primeiro-acesso": typeof PrimeiroAcessoRoute;
+  "/recuperar-senha": typeof RecuperarSenhaRoute;
+  "/app/admin": typeof AuthenticatedAppAdminRoute;
+  "/app/jogadores": typeof AuthenticatedAppJogadoresRoute;
+  "/app/principal": typeof AuthenticatedAppPrincipalRoute;
+  "/app/sorteio": typeof AuthenticatedAppSorteioRoute;
+  "/app/torneios": typeof AuthenticatedAppTorneiosRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/_authenticated": typeof AuthenticatedRouteRouteWithChildren;
+  "/login": typeof LoginRoute;
+  "/primeiro-acesso": typeof PrimeiroAcessoRoute;
+  "/recuperar-senha": typeof RecuperarSenhaRoute;
+  "/_authenticated/app/admin": typeof AuthenticatedAppAdminRoute;
+  "/_authenticated/app/jogadores": typeof AuthenticatedAppJogadoresRoute;
+  "/_authenticated/app/principal": typeof AuthenticatedAppPrincipalRoute;
+  "/_authenticated/app/sorteio": typeof AuthenticatedAppSorteioRoute;
+  "/_authenticated/app/torneios": typeof AuthenticatedAppTorneiosRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths:
+    | "/"
+    | "/login"
+    | "/primeiro-acesso"
+    | "/recuperar-senha"
+    | "/app/admin"
+    | "/app/jogadores"
+    | "/app/principal"
+    | "/app/sorteio"
+    | "/app/torneios";
+  fileRoutesByTo: FileRoutesByTo;
+  to:
+    | "/"
+    | "/login"
+    | "/primeiro-acesso"
+    | "/recuperar-senha"
+    | "/app/admin"
+    | "/app/jogadores"
+    | "/app/principal"
+    | "/app/sorteio"
+    | "/app/torneios";
+  id:
+    | "__root__"
+    | "/"
+    | "/_authenticated"
+    | "/login"
+    | "/primeiro-acesso"
+    | "/recuperar-senha"
+    | "/_authenticated/app/admin"
+    | "/_authenticated/app/jogadores"
+    | "/_authenticated/app/principal"
+    | "/_authenticated/app/sorteio"
+    | "/_authenticated/app/torneios";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  IndexRoute: typeof IndexRoute;
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren;
+  LoginRoute: typeof LoginRoute;
+  PrimeiroAcessoRoute: typeof PrimeiroAcessoRoute;
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_authenticated": {
+      id: "/_authenticated";
+      path: "";
+      fullPath: "/";
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/login": {
+      id: "/login";
+      path: "/login";
+      fullPath: "/login";
+      preLoaderRoute: typeof LoginRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/primeiro-acesso": {
+      id: "/primeiro-acesso";
+      path: "/primeiro-acesso";
+      fullPath: "/primeiro-acesso";
+      preLoaderRoute: typeof PrimeiroAcessoRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/recuperar-senha": {
+      id: "/recuperar-senha";
+      path: "/recuperar-senha";
+      fullPath: "/recuperar-senha";
+      preLoaderRoute: typeof RecuperarSenhaRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_authenticated/app/admin": {
+      id: "/_authenticated/app/admin";
+      path: "/app/admin";
+      fullPath: "/app/admin";
+      preLoaderRoute: typeof AuthenticatedAppAdminRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/app/jogadores": {
+      id: "/_authenticated/app/jogadores";
+      path: "/app/jogadores";
+      fullPath: "/app/jogadores";
+      preLoaderRoute: typeof AuthenticatedAppJogadoresRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/app/principal": {
+      id: "/_authenticated/app/principal";
+      path: "/app/principal";
+      fullPath: "/app/principal";
+      preLoaderRoute: typeof AuthenticatedAppPrincipalRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/app/sorteio": {
+      id: "/_authenticated/app/sorteio";
+      path: "/app/sorteio";
+      fullPath: "/app/sorteio";
+      preLoaderRoute: typeof AuthenticatedAppSorteioRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/app/torneios": {
+      id: "/_authenticated/app/torneios";
+      path: "/app/torneios";
+      fullPath: "/app/torneios";
+      preLoaderRoute: typeof AuthenticatedAppTorneiosRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
   }
 }
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRoute;
+  AuthenticatedAppJogadoresRoute: typeof AuthenticatedAppJogadoresRoute;
+  AuthenticatedAppPrincipalRoute: typeof AuthenticatedAppPrincipalRoute;
+  AuthenticatedAppSorteioRoute: typeof AuthenticatedAppSorteioRoute;
+  AuthenticatedAppTorneiosRoute: typeof AuthenticatedAppTorneiosRoute;
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppAdminRoute: AuthenticatedAppAdminRoute,
+  AuthenticatedAppJogadoresRoute: AuthenticatedAppJogadoresRoute,
+  AuthenticatedAppPrincipalRoute: AuthenticatedAppPrincipalRoute,
+  AuthenticatedAppSorteioRoute: AuthenticatedAppSorteioRoute,
+  AuthenticatedAppTorneiosRoute: AuthenticatedAppTorneiosRoute,
+};
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-}
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
+  PrimeiroAcessoRoute: PrimeiroAcessoRoute,
+  RecuperarSenhaRoute: RecuperarSenhaRoute,
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
+  ._addFileTypes<FileRouteTypes>();
