@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -107,14 +107,6 @@ function LoginPage() {
             {submitting ? <Loader2 className="size-5 animate-spin" /> : "Entrar"}
           </Button>
 
-          <div className="flex flex-col gap-2 pt-1 text-center">
-            <Link to="/primeiro-acesso" className="text-sm font-semibold text-blue hover:underline">
-              Primeiro acesso
-            </Link>
-            <Link to="/recuperar-senha" className="text-sm text-muted-foreground hover:underline">
-              Esqueci minha senha
-            </Link>
-          </div>
         </form>
       </div>
     </div>
