@@ -1,24 +1,51 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import { BrandMark } from "@/components/brand/BrandMark";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { CLUB } from "@/lib/club-config";
+
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Resenha FC — Gestão da pelada" },
+      {
+        name: "description",
+        content:
+          "Sistema oficial do Resenha FC Futebol Clube: jogadores, sorteio de equipes e torneios da pelada.",
+      },
+      { property: "og:title", content: "Resenha FC — Gestão da pelada" },
+      {
+        property: "og:description",
+        content:
+          "Sistema oficial do Resenha FC Futebol Clube: jogadores, sorteio de equipes e torneios da pelada.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && session) navigate({ to: "/app/principal", replace: true });
+  }, [loading, session, navigate]);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="surface-navy flex min-h-screen flex-col items-center justify-center gap-8 px-6 text-center">
+      <BrandMark size="lg" withName={false} />
+      <div>
+        <h1 className="text-title text-navy-foreground">{CLUB.fullName}</h1>
+        <p className="mt-2 text-sm text-navy-foreground/70">
+          {CLUB.schedule.dayLabel} · {CLUB.schedule.timeLabel} · {CLUB.venue.name}
+        </p>
+      </div>
+      <Button asChild size="lg" className="h-12 w-full max-w-xs rounded-xl text-base">
+        <Link to="/login">Entrar no sistema</Link>
+      </Button>
     </div>
   );
 }
