@@ -9,10 +9,12 @@ export function PlayerCard({
   player,
   positions = [],
   interactive = true,
+  onClick,
 }: {
   player: Player;
   positions?: string[];
   interactive?: boolean;
+  onClick?: () => void;
 }) {
   const content = <>
     <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-white/20 bg-navy shadow-xl">
@@ -24,5 +26,8 @@ export function PlayerCard({
     <div className="mt-2 flex items-center justify-between gap-2"><div className="min-w-0"><h3 className="truncate font-display text-lg font-bold text-navy">{player.name}</h3>{player.nickname ? <p className="text-meta truncate">{player.nickname}</p> : null}</div>{player.shirt_number != null ? <span className="shrink-0 rounded-md bg-navy px-2 py-1 text-xs font-bold text-navy-foreground">#{player.shirt_number}</span> : null}</div>
     {player.status !== "active" ? <p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">{player.status === "suspended" ? "Suspenso" : "Inativo"}</p> : null}
   </>;
+  if (onClick) {
+    return <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onClick(); } }} className="block cursor-pointer transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange">{content}</div>;
+  }
   return interactive ? <Link to="/app/jogadores/$id" params={{ id: player.id }} className="block transition-transform hover:-translate-y-1">{content}</Link> : <div>{content}</div>;
 }

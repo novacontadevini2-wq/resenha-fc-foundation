@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -7,6 +7,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { PlayerCard } from "@/components/players/PlayerCard";
 import { PlayerFilters, type PlayerStatusFilter } from "@/components/players/PlayerFilters";
 import { PlayerForm } from "@/components/players/PlayerForm";
+import { PlayerStatusBadge } from "@/components/players/PlayerStatusBadge";
+import { StarRating } from "@/components/players/StarRating";
 import { LoadingState, EmptyState, ErrorState } from "@/components/feedback/states";
 import { SectionCard } from "@/components/ui/section-card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,7 @@ function PlayersPage() {
   const [error, setError] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [previewPlayer, setPreviewPlayer] = useState<Player | null>(null);
 
   async function loadPlayers() {
     setLoading(true);
@@ -91,8 +94,13 @@ function PlayersPage() {
     <AppLayout title="Jogadores" subtitle="Conheça o elenco do Resenha FC.">
       <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h2 className="text-subtitle">Elenco</h2><p className="text-meta">{visiblePlayers.length} jogador{visiblePlayers.length === 1 ? "" : "es"} encontrado{visiblePlayers.length === 1 ? "" : "s"}.</p></div>{isAdmin ? <Button onClick={() => { setEditingPlayer(null); setFormOpen(true); }}><Plus /> Novo jogador</Button> : null}</div>
       <div className="mb-4"><PlayerFilters search={search} status={status} position={position} positions={positions} onSearchChange={setSearch} onStatusChange={setStatus} onPositionChange={setPosition} /></div>
-      {loading ? <LoadingState label="Carregando jogadores..." /> : error ? <ErrorState title="Não foi possível carregar os jogadores." onRetry={() => void loadPlayers()} /> : visiblePlayers.length === 0 ? <EmptyState title="Nenhum jogador encontrado." /> : <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{visiblePlayers.map((player) => <div key={player.id} className="grid gap-2"><PlayerCard player={player} positions={playerPositions.filter((ref) => ref.player_id === player.id).sort((a, b) => Number(b.is_primary) - Number(a.is_primary)).map((ref) => positionById.get(ref.position_id)?.code).filter((code): code is string => Boolean(code))} />{isAdmin ? <div className="flex flex-wrap gap-2 px-1"><Button size="sm" variant="outline" onClick={() => { setEditingPlayer(player); setFormOpen(true); }}>Editar</Button>{player.status === "active" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(player, "inactive")}>Inativar jogador</Button> : player.status === "inactive" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(player, "active")}>Reativar jogador</Button> : null}{player.status !== "suspended" ? <Button size="sm" variant="ghost" onClick={() => void changeStatus(player, "suspended")}>Suspender</Button> : <Button size="sm" variant="ghost" onClick={() => void changeStatus(player, "active")}>Reativar</Button>}</div> : null}</div>)}</div>}
+      {loading ? <LoadingState label="Carregando jogadores..." /> : error ? <ErrorState title="Não foi possível carregar os jogadores." onRetry={() => void loadPlayers()} /> : visiblePlayers.length === 0 ? <EmptyState title="Nenhum jogador encontrado." /> : <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{visiblePlayers.map((player) => { const playerPositionCodes = playerPositions.filter((ref) => ref.player_id === player.id).sort((a, b) => Number(b.is_primary) - Number(a.is_primary)).map((ref) => positionById.get(ref.position_id)?.code).filter((code): code is string => Boolean(code)); return <div key={player.id} className="grid gap-2"><PlayerCard player={player} positions={playerPositionCodes} onClick={() => setPreviewPlayer(player)} />{isAdmin ? <div className="flex flex-wrap gap-2 px-1"><Button size="sm" variant="outline" onClick={() => { setEditingPlayer(player); setFormOpen(true); }}>Editar</Button>{player.status === "active" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(player, "inactive")}>Inativar jogador</Button> : player.status === "inactive" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(player, "active")}>Reativar jogador</Button> : null}{player.status !== "suspended" ? <Button size="sm" variant="ghost" onClick={() => void changeStatus(player, "suspended")}>Suspender</Button> : <Button size="sm" variant="ghost" onClick={() => void changeStatus(player, "active")}>Reativar</Button>}</div> : null}</div>; })}</div>}
+      <Dialog open={previewPlayer !== null} onOpenChange={(open) => { if (!open) setPreviewPlayer(null); }}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>Preview do jogador</DialogTitle><DialogDescription>Informações do jogador selecionado.</DialogDescription></DialogHeader>{previewPlayer ? <PreviewContent player={previewPlayer} positions={playerPositions.filter((ref) => ref.player_id === previewPlayer.id).sort((a, b) => Number(b.is_primary) - Number(a.is_primary)).map((ref) => positionById.get(ref.position_id)?.code).filter((code): code is string => Boolean(code))} /> : null}</DialogContent></Dialog>
       <Dialog open={formOpen} onOpenChange={setFormOpen}><DialogContent><DialogHeader><DialogTitle>{editingPlayer ? "Editar jogador" : "Novo jogador"}</DialogTitle><DialogDescription>Preencha os dados do jogador do Resenha FC.</DialogDescription></DialogHeader><PlayerForm key={editingPlayer?.id ?? "new"} player={editingPlayer} positions={positions} onSubmit={savePlayer} onCancel={() => setFormOpen(false)} /></DialogContent></Dialog>
     </AppLayout>
   );
+}
+
+function PreviewContent({ player, positions }: { player: Player; positions: string[] }) {
+  return <div className="grid gap-5 sm:grid-cols-[minmax(180px,250px)_1fr] sm:items-start"><div><PlayerCard player={player} positions={positions} interactive={false} /></div><div className="grid gap-3 pt-1"><div><h3 className="font-display text-2xl font-bold text-navy">{player.name}</h3>{player.nickname ? <p className="text-meta mt-1">{player.nickname}</p> : null}</div><div className="grid gap-2 text-sm text-muted-foreground"><p>Posição: <strong className="text-navy">{positions[0] ?? "Não definida"}</strong></p><p>Número: <strong className="text-navy">{player.shirt_number ?? "Não informado"}</strong></p><div className="flex items-center gap-2"><span>Avaliação:</span><StarRating value={player.overall_rating} /></div></div><PlayerStatusBadge status={player.status} /><Button asChild className="mt-2"><Link to="/app/jogadores/$id" params={{ id: player.id }}>Ver perfil completo</Link></Button></div></div>;
 }
