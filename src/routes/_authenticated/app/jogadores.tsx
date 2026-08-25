@@ -61,9 +61,9 @@ function PlayersPage() {
     const term = search.trim().toLowerCase();
     const matchesSearch = !term || [player.name, player.nickname ?? "", player.shirt_number?.toString() ?? ""].some((value) => value.toLowerCase().includes(term));
     const refs = playerPositions.filter((ref) => ref.player_id === player.id);
-    const matchesPosition = position === "all" || refs.some((ref) => ref.position_id === position);
+    const matchesPosition = position === "all" || refs.some((ref) => positionById.get(ref.position_id)?.code === position);
     return matchesSearch && matchesPosition && (status === "all" || player.status === status);
-  }), [players, playerPositions, position, search, status]);
+  }), [players, playerPositions, position, positionById, search, status]);
 
   async function savePlayer(values: { name: string; nickname: string | null; shirt_number: number | null; positionId: string; overall_rating: number; photo_url: string | null; status: PlayerStatus }) {
     const payload = { name: values.name, nickname: values.nickname, shirt_number: values.shirt_number, overall_rating: values.overall_rating, photo_url: values.photo_url, status: values.status };
