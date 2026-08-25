@@ -1,8 +1,7 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { ShieldCheck } from "lucide-react";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { CalendarDays, ShieldCheck, Trophy } from "lucide-react";
 
 import { AppLayout } from "@/components/layout/AppLayout";
-import { ComingSoon } from "@/components/feedback/states";
 import { SectionCard } from "@/components/ui/section-card";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -24,8 +23,12 @@ function AdminPage() {
   return (
     <AppLayout title="Administração" subtitle="Configurações e gestão do clube.">
       <SectionCard title="Área administrativa" icon={ShieldCheck}>
-        <ComingSoon title="Painel em breve" description="A gestão de jogadores, temporadas e rodadas será disponibilizada aqui." />
+        <div className="grid gap-3 sm:grid-cols-2"><AdminLink to="/app/admin/temporadas" icon={Trophy} label="Gerenciar temporadas" /><AdminLink to="/app/admin/rodadas" icon={CalendarDays} label="Gerenciar rodadas" /></div>
       </SectionCard>
     </AppLayout>
   );
+}
+
+function AdminLink({ to, icon: Icon, label }: { to: "/app/admin/temporadas" | "/app/admin/rodadas"; icon: typeof Trophy; label: string }) {
+  return <Link to={to} className="card-surface flex items-center gap-3 p-4 font-semibold text-navy transition-transform hover:-translate-y-0.5"><span className="flex size-10 items-center justify-center rounded-xl bg-accent"><Icon className="size-5" /></span>{label}</Link>;
 }

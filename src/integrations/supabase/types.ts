@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      round_players: {
+        Row: {
+          id: string
+          round_id: string
+          player_id: string
+          participation_status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          round_id: string
+          player_id: string
+          participation_status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          round_id?: string
+          player_id?: string
+          participation_status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       player_positions: {
         Row: {
           id: string

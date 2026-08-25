@@ -20,6 +20,10 @@ import { Route as AuthenticatedAppPrincipalRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppSorteioRouteImport } from './routes/_authenticated/app/sorteio'
 import { Route as AuthenticatedAppTorneiosRouteImport } from './routes/_authenticated/app/torneios'
 import { Route as AuthenticatedAppJogadoresIdRouteImport } from './routes/_authenticated/app/jogadores.$id'
+import { Route as AuthenticatedAppRodadasRouteImport } from './routes/_authenticated/app/rodadas'
+import { Route as AuthenticatedAppRodadasIdRouteImport } from './routes/_authenticated/app/rodadas.$id'
+import { Route as AuthenticatedAppAdminTemporadasRouteImport } from './routes/_authenticated/app/admin/temporadas'
+import { Route as AuthenticatedAppAdminRodadasRouteImport } from './routes/_authenticated/app/admin/rodadas'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -79,6 +83,10 @@ const AuthenticatedAppJogadoresIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedAppJogadoresRoute,
   } as any)
+const AuthenticatedAppRodadasRoute = AuthenticatedAppRodadasRouteImport.update({ id: '/app/rodadas', path: '/app/rodadas', getParentRoute: () => AuthenticatedRouteRoute } as any)
+const AuthenticatedAppRodadasIdRoute = AuthenticatedAppRodadasIdRouteImport.update({ id: '/app/rodadas/$id', path: '/$id', getParentRoute: () => AuthenticatedAppRodadasRoute } as any)
+const AuthenticatedAppAdminTemporadasRoute = AuthenticatedAppAdminTemporadasRouteImport.update({ id: '/app/admin/temporadas', path: '/temporadas', getParentRoute: () => AuthenticatedAppAdminRoute } as any)
+const AuthenticatedAppAdminRodadasRoute = AuthenticatedAppAdminRodadasRouteImport.update({ id: '/app/admin/rodadas', path: '/rodadas', getParentRoute: () => AuthenticatedAppAdminRoute } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -91,6 +99,10 @@ export interface FileRoutesByFullPath {
   '/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/app/torneios': typeof AuthenticatedAppTorneiosRoute
   '/app/jogadores/$id': typeof AuthenticatedAppJogadoresIdRoute
+  '/app/rodadas': typeof AuthenticatedAppRodadasRoute
+  '/app/rodadas/$id': typeof AuthenticatedAppRodadasIdRoute
+  '/app/admin/temporadas': typeof AuthenticatedAppAdminTemporadasRoute
+  '/app/admin/rodadas': typeof AuthenticatedAppAdminRodadasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -103,6 +115,10 @@ export interface FileRoutesByTo {
   '/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/app/torneios': typeof AuthenticatedAppTorneiosRoute
   '/app/jogadores/$id': typeof AuthenticatedAppJogadoresIdRoute
+  '/app/rodadas': typeof AuthenticatedAppRodadasRoute
+  '/app/rodadas/$id': typeof AuthenticatedAppRodadasIdRoute
+  '/app/admin/temporadas': typeof AuthenticatedAppAdminTemporadasRoute
+  '/app/admin/rodadas': typeof AuthenticatedAppAdminRodadasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -117,6 +133,10 @@ export interface FileRoutesById {
   '/_authenticated/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/_authenticated/app/torneios': typeof AuthenticatedAppTorneiosRoute
   '/_authenticated/app/jogadores/$id': typeof AuthenticatedAppJogadoresIdRoute
+  '/_authenticated/app/rodadas': typeof AuthenticatedAppRodadasRoute
+  '/_authenticated/app/rodadas/$id': typeof AuthenticatedAppRodadasIdRoute
+  '/_authenticated/app/admin/temporadas': typeof AuthenticatedAppAdminTemporadasRoute
+  '/_authenticated/app/admin/rodadas': typeof AuthenticatedAppAdminRodadasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +151,10 @@ export interface FileRouteTypes {
     | '/app/sorteio'
     | '/app/torneios'
     | '/app/jogadores/$id'
+    | '/app/rodadas'
+    | '/app/rodadas/$id'
+    | '/app/admin/temporadas'
+    | '/app/admin/rodadas'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -143,6 +167,10 @@ export interface FileRouteTypes {
     | '/app/sorteio'
     | '/app/torneios'
     | '/app/jogadores/$id'
+    | '/app/rodadas'
+    | '/app/rodadas/$id'
+    | '/app/admin/temporadas'
+    | '/app/admin/rodadas'
   id:
     | '__root__'
     | '/'
@@ -156,6 +184,10 @@ export interface FileRouteTypes {
     | '/_authenticated/app/sorteio'
     | '/_authenticated/app/torneios'
     | '/_authenticated/app/jogadores/$id'
+    | '/_authenticated/app/rodadas'
+    | '/_authenticated/app/rodadas/$id'
+    | '/_authenticated/app/admin/temporadas'
+    | '/_authenticated/app/admin/rodadas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -245,12 +277,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppJogadoresIdRouteImport
       parentRoute: typeof AuthenticatedAppJogadoresRoute
     }
+    '/_authenticated/app/rodadas': {
+      id: '/_authenticated/app/rodadas'
+      path: '/app/rodadas'
+      fullPath: '/app/rodadas'
+      preLoaderRoute: typeof AuthenticatedAppRodadasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/rodadas/$id': {
+      id: '/_authenticated/app/rodadas/$id'
+      path: '/$id'
+      fullPath: '/app/rodadas/$id'
+      preLoaderRoute: typeof AuthenticatedAppRodadasIdRouteImport
+      parentRoute: typeof AuthenticatedAppRodadasRoute
+    }
+    '/_authenticated/app/admin/temporadas': {
+      id: '/_authenticated/app/admin/temporadas'
+      path: '/temporadas'
+      fullPath: '/app/admin/temporadas'
+      preLoaderRoute: typeof AuthenticatedAppAdminTemporadasRouteImport
+      parentRoute: typeof AuthenticatedAppAdminRoute
+    }
+    '/_authenticated/app/admin/rodadas': {
+      id: '/_authenticated/app/admin/rodadas'
+      path: '/rodadas'
+      fullPath: '/app/admin/rodadas'
+      preLoaderRoute: typeof AuthenticatedAppAdminRodadasRouteImport
+      parentRoute: typeof AuthenticatedAppAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAppJogadoresRouteChildren {
   AuthenticatedAppJogadoresIdRoute: typeof AuthenticatedAppJogadoresIdRoute
 }
+
+interface AuthenticatedAppRodadasRouteChildren {
+  AuthenticatedAppRodadasIdRoute: typeof AuthenticatedAppRodadasIdRoute
+}
+
+const AuthenticatedAppRodadasRouteChildren: AuthenticatedAppRodadasRouteChildren = {
+  AuthenticatedAppRodadasIdRoute: AuthenticatedAppRodadasIdRoute,
+}
+
+const AuthenticatedAppRodadasRouteWithChildren = AuthenticatedAppRodadasRoute._addFileChildren(AuthenticatedAppRodadasRouteChildren)
+
+interface AuthenticatedAppAdminRouteChildren {
+  AuthenticatedAppAdminTemporadasRoute: typeof AuthenticatedAppAdminTemporadasRoute
+  AuthenticatedAppAdminRodadasRoute: typeof AuthenticatedAppAdminRodadasRoute
+}
+
+const AuthenticatedAppAdminRouteChildren: AuthenticatedAppAdminRouteChildren = {
+  AuthenticatedAppAdminTemporadasRoute: AuthenticatedAppAdminTemporadasRoute,
+  AuthenticatedAppAdminRodadasRoute: AuthenticatedAppAdminRodadasRoute,
+}
+
+const AuthenticatedAppAdminRouteWithChildren = AuthenticatedAppAdminRoute._addFileChildren(AuthenticatedAppAdminRouteChildren)
 
 const AuthenticatedAppJogadoresRouteChildren: AuthenticatedAppJogadoresRouteChildren =
   {
@@ -263,16 +345,18 @@ const AuthenticatedAppJogadoresRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRoute
+  AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRouteWithChildren
   AuthenticatedAppJogadoresRoute: typeof AuthenticatedAppJogadoresRouteWithChildren
+  AuthenticatedAppRodadasRoute: typeof AuthenticatedAppRodadasRouteWithChildren
   AuthenticatedAppPrincipalRoute: typeof AuthenticatedAppPrincipalRoute
   AuthenticatedAppSorteioRoute: typeof AuthenticatedAppSorteioRoute
   AuthenticatedAppTorneiosRoute: typeof AuthenticatedAppTorneiosRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAppAdminRoute: AuthenticatedAppAdminRoute,
+  AuthenticatedAppAdminRoute: AuthenticatedAppAdminRouteWithChildren,
   AuthenticatedAppJogadoresRoute: AuthenticatedAppJogadoresRouteWithChildren,
+  AuthenticatedAppRodadasRoute: AuthenticatedAppRodadasRouteWithChildren,
   AuthenticatedAppPrincipalRoute: AuthenticatedAppPrincipalRoute,
   AuthenticatedAppSorteioRoute: AuthenticatedAppSorteioRoute,
   AuthenticatedAppTorneiosRoute: AuthenticatedAppTorneiosRoute,
