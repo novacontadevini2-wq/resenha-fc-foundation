@@ -83,8 +83,10 @@ export function PlayerForm({ player, positions, onSubmit, onCancel }: PlayerForm
       }
 
       await onSubmit({ name: normalizedName, nickname: nickname.trim() || null, shirt_number: numericShirt, positionId, overall_rating: numericRating, photo_url: finalPhotoUrl, status });
-    } catch {
-      setError("Não foi possível salvar o jogador.");
+    } catch (submitError) {
+      const message = submitError instanceof Error ? submitError.message : "";
+      setError(message ? `Não foi possível salvar o jogador: ${message}` : "Não foi possível salvar o jogador.");
+
     } finally {
       setSaving(false);
     }
