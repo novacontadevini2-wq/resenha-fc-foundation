@@ -77,8 +77,11 @@ export function PlayerForm({ player, positions, onSubmit, onCancel }: PlayerForm
         const path = `${crypto.randomUUID()}-${photoFile.name.replace(/[^a-zA-Z0-9._-]/g, "")}`;
         const { error: uploadError } = await supabase.storage.from("player-photos").upload(path, photoFile, { upsert: false, contentType: photoFile.type });
         if (uploadError) throw uploadError;
-        finalPhotoUrl = supabase.storage.from("player-photos").getPublicUrl(path).data.publicUrl;
+        const { data: signed, error: signError } = await supabase.storage.from("player-photos").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+        if (signError || !signed?.signedUrl) throw signError ?? new Error("Não foi possível gerar a URL da foto.");
+        finalPhotoUrl = signed.signedUrl;
       }
+
       await onSubmit({ name: normalizedName, nickname: nickname.trim() || null, shirt_number: numericShirt, positionId, overall_rating: numericRating, photo_url: finalPhotoUrl, status });
     } catch {
       setError("Não foi possível salvar o jogador.");
