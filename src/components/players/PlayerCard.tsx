@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/players/StarRating";
@@ -20,7 +21,7 @@ export function PlayerCard({
   positions?: string[];
 }) {
   return (
-    <article className="card-surface flex items-center gap-4 p-4">
+    <Link to="/app/jogadores/$id" params={{ id: player.id }} className="card-surface flex items-center gap-4 p-4 transition-transform hover:-translate-y-0.5">
       <Avatar className="size-14 border-2 border-accent">
         <AvatarImage src={player.photo_url ?? undefined} alt={player.name} />
         <AvatarFallback className="bg-navy text-navy-foreground font-display">
@@ -52,6 +53,7 @@ export function PlayerCard({
         </div>
         <StarRating value={player.overall_rating} className="mt-1.5" />
       </div>
-    </article>
+      {player.status !== "active" ? <span className="shrink-0 text-xs font-semibold uppercase text-muted-foreground">{player.status === "suspended" ? "Suspenso" : "Inativo"}</span> : null}
+    </Link>
   );
 }

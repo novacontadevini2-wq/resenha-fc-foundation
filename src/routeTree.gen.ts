@@ -16,6 +16,7 @@ import { Route as PrimeiroAcessoRouteImport } from "./routes/primeiro-acesso";
 import { Route as RecuperarSenhaRouteImport } from "./routes/recuperar-senha";
 import { Route as AuthenticatedAppAdminRouteImport } from "./routes/_authenticated/app/admin";
 import { Route as AuthenticatedAppJogadoresRouteImport } from "./routes/_authenticated/app/jogadores";
+import { Route as AuthenticatedAppJogadoresIdRouteImport } from "./routes/_authenticated/app/jogadores.$id";
 import { Route as AuthenticatedAppPrincipalRouteImport } from "./routes/_authenticated/app/principal";
 import { Route as AuthenticatedAppSorteioRouteImport } from "./routes/_authenticated/app/sorteio";
 import { Route as AuthenticatedAppTorneiosRouteImport } from "./routes/_authenticated/app/torneios";
@@ -55,6 +56,11 @@ const AuthenticatedAppJogadoresRoute =
     path: "/app/jogadores",
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any);
+const AuthenticatedAppJogadoresIdRoute = AuthenticatedAppJogadoresIdRouteImport.update({
+  id: "/app/jogadores/$id",
+  path: "/app/jogadores/$id",
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any);
 const AuthenticatedAppPrincipalRoute =
   AuthenticatedAppPrincipalRouteImport.update({
     id: "/app/principal",
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   "/recuperar-senha": typeof RecuperarSenhaRoute;
   "/app/admin": typeof AuthenticatedAppAdminRoute;
   "/app/jogadores": typeof AuthenticatedAppJogadoresRoute;
+  "/app/jogadores/$id": typeof AuthenticatedAppJogadoresIdRoute;
   "/app/principal": typeof AuthenticatedAppPrincipalRoute;
   "/app/sorteio": typeof AuthenticatedAppSorteioRoute;
   "/app/torneios": typeof AuthenticatedAppTorneiosRoute;
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   "/recuperar-senha": typeof RecuperarSenhaRoute;
   "/app/admin": typeof AuthenticatedAppAdminRoute;
   "/app/jogadores": typeof AuthenticatedAppJogadoresRoute;
+  "/app/jogadores/$id": typeof AuthenticatedAppJogadoresIdRoute;
   "/app/principal": typeof AuthenticatedAppPrincipalRoute;
   "/app/sorteio": typeof AuthenticatedAppSorteioRoute;
   "/app/torneios": typeof AuthenticatedAppTorneiosRoute;
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   "/recuperar-senha": typeof RecuperarSenhaRoute;
   "/_authenticated/app/admin": typeof AuthenticatedAppAdminRoute;
   "/_authenticated/app/jogadores": typeof AuthenticatedAppJogadoresRoute;
+  "/_authenticated/app/jogadores/$id": typeof AuthenticatedAppJogadoresIdRoute;
   "/_authenticated/app/principal": typeof AuthenticatedAppPrincipalRoute;
   "/_authenticated/app/sorteio": typeof AuthenticatedAppSorteioRoute;
   "/_authenticated/app/torneios": typeof AuthenticatedAppTorneiosRoute;
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | "/recuperar-senha"
     | "/app/admin"
     | "/app/jogadores"
+    | "/app/jogadores/$id"
     | "/app/principal"
     | "/app/sorteio"
     | "/app/torneios";
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | "/recuperar-senha"
     | "/app/admin"
     | "/app/jogadores"
+    | "/app/jogadores/$id"
     | "/app/principal"
     | "/app/sorteio"
     | "/app/torneios";
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | "/recuperar-senha"
     | "/_authenticated/app/admin"
     | "/_authenticated/app/jogadores"
+    | "/_authenticated/app/jogadores/$id"
     | "/_authenticated/app/principal"
     | "/_authenticated/app/sorteio"
     | "/_authenticated/app/torneios";
@@ -204,6 +216,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AuthenticatedAppJogadoresRouteImport;
       parentRoute: typeof AuthenticatedRouteRoute;
     };
+    "/_authenticated/app/jogadores/$id": {
+      id: "/_authenticated/app/jogadores/$id";
+      path: "/app/jogadores/$id";
+      fullPath: "/app/jogadores/$id";
+      preLoaderRoute: typeof AuthenticatedAppJogadoresIdRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
     "/_authenticated/app/principal": {
       id: "/_authenticated/app/principal";
       path: "/app/principal";
@@ -231,6 +250,7 @@ declare module "@tanstack/react-router" {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRoute;
   AuthenticatedAppJogadoresRoute: typeof AuthenticatedAppJogadoresRoute;
+  AuthenticatedAppJogadoresIdRoute: typeof AuthenticatedAppJogadoresIdRoute;
   AuthenticatedAppPrincipalRoute: typeof AuthenticatedAppPrincipalRoute;
   AuthenticatedAppSorteioRoute: typeof AuthenticatedAppSorteioRoute;
   AuthenticatedAppTorneiosRoute: typeof AuthenticatedAppTorneiosRoute;
@@ -239,6 +259,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppAdminRoute: AuthenticatedAppAdminRoute,
   AuthenticatedAppJogadoresRoute: AuthenticatedAppJogadoresRoute,
+  AuthenticatedAppJogadoresIdRoute: AuthenticatedAppJogadoresIdRoute,
   AuthenticatedAppPrincipalRoute: AuthenticatedAppPrincipalRoute,
   AuthenticatedAppSorteioRoute: AuthenticatedAppSorteioRoute,
   AuthenticatedAppTorneiosRoute: AuthenticatedAppTorneiosRoute,

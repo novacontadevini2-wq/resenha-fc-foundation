@@ -1,6 +1,6 @@
 export type AppRole = "admin" | "player";
 
-export type PlayerStatus = "active" | "inactive";
+export type PlayerStatus = "active" | "inactive" | "suspended";
 
 export interface Player {
   id: string;
@@ -9,7 +9,7 @@ export interface Player {
   nickname: string | null;
   photo_url: string | null;
   shirt_number: number | null;
-  status: string;
+  status: PlayerStatus;
   overall_rating: number;
   created_at: string;
   updated_at: string;
