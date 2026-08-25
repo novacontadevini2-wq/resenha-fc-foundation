@@ -5,7 +5,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { SectionCard } from "@/components/ui/section-card";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_authenticated/app/admin")({
+export const Route = createFileRoute("/_authenticated/app/admin/")({
   head: () => ({ meta: [{ title: "Administração | Resenha FC" }] }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();

@@ -14,33 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      round_players: {
-        Row: {
-          id: string
-          round_id: string
-          player_id: string
-          participation_status: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          round_id: string
-          player_id: string
-          participation_status?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          round_id?: string
-          player_id?: string
-          participation_status?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       player_positions: {
         Row: {
           id: string
@@ -166,6 +139,48 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      round_players: {
+        Row: {
+          created_at: string
+          id: string
+          participation_status: string
+          player_id: string
+          round_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          participation_status?: string
+          player_id: string
+          round_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          participation_status?: string
+          player_id?: string
+          round_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "round_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "round_players_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rounds: {
         Row: {
