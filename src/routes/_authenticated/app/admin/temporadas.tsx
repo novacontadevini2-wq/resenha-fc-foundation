@@ -1,4 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -28,6 +29,7 @@ function SeasonsAdminPage() {
   const [end, setEnd] = useState("");
   const [saving, setSaving] = useState(false);
   const [roundCounts, setRoundCounts] = useState<Record<string, number>>({});
+  const [deletingSeasonId, setDeletingSeasonId] = useState<string | null>(null);
 
   async function load() {
     const [{ data, error: loadError }, { data: rounds }] = await Promise.all([supabase.from("seasons").select("*").order("start_date", { ascending: false }), supabase.from("rounds").select("season_id")]);
@@ -63,6 +65,15 @@ function SeasonsAdminPage() {
     if (updateError) toast.error("Não foi possível atualizar a temporada."); else { toast.success(status === "active" ? "Temporada ativada." : "Temporada atualizada."); await load(); }
   }
 
+  async function deleteSeason(season: Season) {
+    if (!window.confirm(`Tem certeza que deseja excluir a temporada ${season.name}? Esta ação não pode ser desfeita.`)) return;
+    setDeletingSeasonId(season.id);
+    const { error: deleteError } = await supabase.from("seasons").delete().eq("id", season.id);
+    setDeletingSeasonId(null);
+    if (deleteError) toast.error("Não foi possível excluir a temporada.");
+    else { toast.success("Temporada excluída com sucesso."); await load(); }
+  }
+
   return <AppLayout title="Temporadas" subtitle="Organize os períodos do Resenha FC.">
     <form onSubmit={createSeason} className="card-surface mb-5 grid gap-3 p-4 sm:grid-cols-[1fr_160px_160px_auto] sm:items-end">
       <label className="grid gap-1 text-sm font-medium text-navy">Nome<Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Temporada 2026" required /></label>
@@ -70,6 +81,6 @@ function SeasonsAdminPage() {
       <label className="grid gap-1 text-sm font-medium text-navy">Data final<Input type="date" value={end} min={start} onChange={(event) => setEnd(event.target.value)} /></label>
       <Button disabled={saving}>{saving ? "Salvando..." : "Criar temporada"}</Button>
     </form>
-    {loading ? <LoadingState label="Carregando temporadas..." /> : error ? <ErrorState title="Não foi possível carregar as temporadas." onRetry={() => void load()} /> : seasons.length === 0 ? <EmptyState title="Nenhuma temporada encontrada." /> : <div className="grid gap-3">{seasons.map((season) => <article key={season.id} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-display text-lg font-bold text-navy">{season.name}</h2><p className="text-meta">{new Date(`${season.start_date}T12:00:00`).toLocaleDateString("pt-BR")} {season.end_date ? `— ${new Date(`${season.end_date}T12:00:00`).toLocaleDateString("pt-BR")}` : "— presente"}</p><p className="text-meta">{roundCounts[season.id] ?? 0} rodada{roundCounts[season.id] === 1 ? "" : "s"}</p><p className="text-xs font-semibold uppercase text-orange">{season.status}</p></div><div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => void editSeason(season)}>Editar</Button>{season.status !== "active" && season.status !== "finished" ? <Button size="sm" onClick={() => void changeStatus(season, "active")}>Ativar temporada</Button> : null}{season.status === "active" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(season, "finished")}>Finalizar</Button> : null}{season.status === "finished" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(season, "archived")}>Arquivar</Button> : null}</div></article>)}</div>}
+    {loading ? <LoadingState label="Carregando temporadas..." /> : error ? <ErrorState title="Não foi possível carregar as temporadas." onRetry={() => void load()} /> : seasons.length === 0 ? <EmptyState title="Nenhuma temporada encontrada." /> : <div className="grid gap-3">{seasons.map((season) => <article key={season.id} className="card-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-display text-lg font-bold text-navy">{season.name}</h2><p className="text-meta">{new Date(`${season.start_date}T12:00:00`).toLocaleDateString("pt-BR")} {season.end_date ? `— ${new Date(`${season.end_date}T12:00:00`).toLocaleDateString("pt-BR")}` : "— presente"}</p><p className="text-meta">{roundCounts[season.id] ?? 0} rodada{roundCounts[season.id] === 1 ? "" : "s"}</p><p className="text-xs font-semibold uppercase text-orange">{season.status}</p></div><div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => void editSeason(season)}>Editar</Button>{season.status !== "active" && season.status !== "finished" ? <Button size="sm" onClick={() => void changeStatus(season, "active")}>Ativar temporada</Button> : null}{season.status === "active" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(season, "finished")}>Finalizar</Button> : null}{season.status === "finished" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(season, "archived")}>Arquivar</Button> : null}<Button size="sm" variant="destructive" disabled={deletingSeasonId === season.id} onClick={() => void deleteSeason(season)}><Trash2 />{deletingSeasonId === season.id ? "Excluindo..." : "Excluir"}</Button></div></article>)}</div>}
   </AppLayout>;
 }
