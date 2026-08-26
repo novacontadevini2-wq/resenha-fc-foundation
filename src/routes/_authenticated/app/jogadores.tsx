@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Users } from "lucide-react";
+import { Plus, Trash2, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -35,6 +35,7 @@ function PlayersPage() {
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [previewPlayer, setPreviewPlayer] = useState<Player | null>(null);
+  const [deletingPlayerId, setDeletingPlayerId] = useState<string | null>(null);
 
   async function loadPlayers() {
     setLoading(true);
@@ -90,11 +91,25 @@ function PlayersPage() {
     else { toast.success(nextStatus === "active" ? "Jogador reativado com sucesso." : "Status do jogador atualizado."); await loadPlayers(); }
   }
 
+  async function deletePlayer(player: Player) {
+    if (!window.confirm(`Tem certeza que deseja excluir o jogador ${player.name}? Esta ação não pode ser desfeita.`)) return;
+    setDeletingPlayerId(player.id);
+    const { error: deleteError } = await supabase.from("players").delete().eq("id", player.id);
+    setDeletingPlayerId(null);
+    if (deleteError) {
+      toast.error(deleteError.code === "23503" ? "Não é possível excluir um jogador que possui histórico de rodadas ou sorteios. Inative-o em vez disso." : "Não foi possível excluir o jogador.");
+      return;
+    }
+    setPreviewPlayer(null);
+    toast.success("Jogador excluído com sucesso.");
+    await loadPlayers();
+  }
+
   return (
     <AppLayout title="Jogadores" subtitle="Conheça o elenco do Resenha FC.">
       <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h2 className="text-subtitle">Elenco</h2><p className="text-meta">{visiblePlayers.length} jogador{visiblePlayers.length === 1 ? "" : "es"} encontrado{visiblePlayers.length === 1 ? "" : "s"}.</p></div>{isAdmin ? <Button onClick={() => { setEditingPlayer(null); setFormOpen(true); }}><Plus /> Novo jogador</Button> : null}</div>
       <div className="mb-4"><PlayerFilters search={search} status={status} position={position} positions={positions} onSearchChange={setSearch} onStatusChange={setStatus} onPositionChange={setPosition} /></div>
-      {loading ? <LoadingState label="Carregando jogadores..." /> : error ? <ErrorState title="Não foi possível carregar os jogadores." onRetry={() => void loadPlayers()} /> : visiblePlayers.length === 0 ? <EmptyState title="Nenhum jogador encontrado." /> : <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{visiblePlayers.map((player) => { const playerPositionCodes = playerPositions.filter((ref) => ref.player_id === player.id).sort((a, b) => Number(b.is_primary) - Number(a.is_primary)).map((ref) => positionById.get(ref.position_id)?.code).filter((code): code is string => Boolean(code)); return <div key={player.id} className="grid gap-2"><PlayerCard player={player} positions={playerPositionCodes} onClick={() => setPreviewPlayer(player)} />{isAdmin ? <div className="flex flex-wrap gap-2 px-1"><Button size="sm" variant="outline" onClick={() => { setEditingPlayer(player); setFormOpen(true); }}>Editar</Button>{player.status === "active" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(player, "inactive")}>Inativar jogador</Button> : player.status === "inactive" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(player, "active")}>Reativar jogador</Button> : null}{player.status !== "suspended" ? <Button size="sm" variant="ghost" onClick={() => void changeStatus(player, "suspended")}>Suspender</Button> : <Button size="sm" variant="ghost" onClick={() => void changeStatus(player, "active")}>Reativar</Button>}</div> : null}</div>; })}</div>}
+      {loading ? <LoadingState label="Carregando jogadores..." /> : error ? <ErrorState title="Não foi possível carregar os jogadores." onRetry={() => void loadPlayers()} /> : visiblePlayers.length === 0 ? <EmptyState title="Nenhum jogador encontrado." /> : <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{visiblePlayers.map((player) => { const playerPositionCodes = playerPositions.filter((ref) => ref.player_id === player.id).sort((a, b) => Number(b.is_primary) - Number(a.is_primary)).map((ref) => positionById.get(ref.position_id)?.code).filter((code): code is string => Boolean(code)); return <div key={player.id} className="grid gap-2"><PlayerCard player={player} positions={playerPositionCodes} onClick={() => setPreviewPlayer(player)} />{isAdmin ? <div className="flex flex-wrap gap-2 px-1"><Button size="sm" variant="outline" onClick={() => { setEditingPlayer(player); setFormOpen(true); }}>Editar</Button>{player.status === "active" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(player, "inactive")}>Inativar jogador</Button> : player.status === "inactive" ? <Button size="sm" variant="outline" onClick={() => void changeStatus(player, "active")}>Reativar jogador</Button> : null}{player.status !== "suspended" ? <Button size="sm" variant="ghost" onClick={() => void changeStatus(player, "suspended")}>Suspender</Button> : <Button size="sm" variant="ghost" onClick={() => void changeStatus(player, "active")}>Reativar</Button>}<Button size="sm" variant="destructive" disabled={deletingPlayerId === player.id} onClick={() => void deletePlayer(player)}><Trash2 />{deletingPlayerId === player.id ? "Excluindo..." : "Excluir"}</Button></div> : null}</div>; })}</div>}
       <Dialog open={previewPlayer !== null} onOpenChange={(open) => { if (!open) setPreviewPlayer(null); }}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>Preview do jogador</DialogTitle><DialogDescription>Informações do jogador selecionado.</DialogDescription></DialogHeader>{previewPlayer ? <PreviewContent player={previewPlayer} positions={playerPositions.filter((ref) => ref.player_id === previewPlayer.id).sort((a, b) => Number(b.is_primary) - Number(a.is_primary)).map((ref) => positionById.get(ref.position_id)?.code).filter((code): code is string => Boolean(code))} /> : null}</DialogContent></Dialog>
       <Dialog open={formOpen} onOpenChange={setFormOpen}><DialogContent><DialogHeader><DialogTitle>{editingPlayer ? "Editar jogador" : "Novo jogador"}</DialogTitle><DialogDescription>Preencha os dados do jogador do Resenha FC.</DialogDescription></DialogHeader><PlayerForm key={editingPlayer?.id ?? "new"} player={editingPlayer} positions={positions} onSubmit={savePlayer} onCancel={() => setFormOpen(false)} /></DialogContent></Dialog>
     </AppLayout>
