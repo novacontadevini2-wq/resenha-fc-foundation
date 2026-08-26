@@ -10,28 +10,10 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
-      draws: {
-        Row: { id: string; round_id: string; teams_count: number; players_per_team: number; algorithm_version: string; status: string; balance_score: number; created_by: string; created_at: string; confirmed_at: string | null }
-        Insert: { id?: string; round_id: string; teams_count: number; players_per_team: number; algorithm_version?: string; status?: string; balance_score?: number; created_by: string; created_at?: string; confirmed_at?: string | null }
-        Update: { id?: string; round_id?: string; teams_count?: number; players_per_team?: number; algorithm_version?: string; status?: string; balance_score?: number; created_by?: string; created_at?: string; confirmed_at?: string | null }
-        Relationships: []
-      }
-      draw_teams: {
-        Row: { id: string; draw_id: string; team_number: number; total_rating: number }
-        Insert: { id?: string; draw_id: string; team_number: number; total_rating?: number }
-        Update: { id?: string; draw_id?: string; team_number?: number; total_rating?: number }
-        Relationships: []
-      }
-      draw_team_players: {
-        Row: { id: string; draw_id: string; team_id: string; player_id: string; player_name_snapshot: string; rating_snapshot: number; position_code_snapshot: string | null; position_name_snapshot: string | null; photo_url_snapshot: string | null }
-        Insert: { id?: string; draw_id: string; team_id: string; player_id: string; player_name_snapshot: string; rating_snapshot: number; position_code_snapshot?: string | null; position_name_snapshot?: string | null; photo_url_snapshot?: string | null }
-        Update: { id?: string; draw_id?: string; team_id?: string; player_id?: string; player_name_snapshot?: string; rating_snapshot?: number; position_code_snapshot?: string | null; position_name_snapshot?: string | null; photo_url_snapshot?: string | null }
-        Relationships: []
-      }
       player_positions: {
         Row: {
           id: string
@@ -306,8 +288,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      perform_draw: { Args: { p_round_id: string; p_teams_count: number; p_players_per_team: number; p_player_ids: string[] }; Returns: string }
-      confirm_draw: { Args: { p_draw_id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
