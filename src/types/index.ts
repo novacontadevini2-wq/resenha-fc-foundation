@@ -4,6 +4,7 @@ export type PlayerStatus = "active" | "inactive" | "suspended";
 export type SeasonStatus = "planned" | "active" | "finished" | "archived";
 export type RoundStatus = "scheduled" | "open" | "in_progress" | "finished" | "cancelled";
 export type ParticipationStatus = "pending" | "confirmed" | "absent";
+export type MatchStatus = "scheduled" | "in_progress" | "finished" | "cancelled";
 
 export interface Season {
   id: string;
@@ -46,4 +47,49 @@ export interface PlayerPositionRef {
   code: string;
   name: string;
   is_primary: boolean;
+}
+
+export interface Match {
+  id: string;
+  round_id: string;
+  draw_id: string;
+  team_a_id: string;
+  team_b_id: string;
+  scheduled_at: string | null;
+  status: MatchStatus;
+  score_a: number;
+  score_b: number;
+  notes: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Draw {
+  id: string;
+  round_id: string;
+  teams_count: number;
+  players_per_team: number;
+  status: string;
+  balance_score: number;
+  algorithm_version: string;
+  created_at: string;
+}
+
+export interface MatchTeam {
+  id: string;
+  draw_id: string;
+  team_number: number;
+  total_rating: number;
+}
+
+export interface MatchGoal {
+  id: string;
+  match_id: string;
+  player_id: string;
+  team_id: string;
+  minute: number | null;
+  created_at: string;
+  updated_at: string;
 }

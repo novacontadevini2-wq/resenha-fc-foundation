@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Shield, Shuffle, Trophy, Users } from "lucide-react";
+import { Home, Shield, Shuffle, Swords, Trophy, Users } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ const items = [
   { to: "/app/principal", label: "Principal", icon: Home },
   { to: "/app/jogadores", label: "Jogadores", icon: Users },
   { to: "/app/sorteio", label: "Sorteio", icon: Shuffle },
+  { to: "/app/partidas", label: "Partidas", icon: Swords },
   { to: "/app/torneios", label: "Torneio", icon: Trophy },
 ] as const;
 

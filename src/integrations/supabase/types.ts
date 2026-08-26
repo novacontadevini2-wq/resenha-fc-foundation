@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      matches: {
+        Row: { id: string; round_id: string; draw_id: string; team_a_id: string; team_b_id: string; scheduled_at: string | null; status: string; score_a: number; score_b: number; notes: string | null; started_at: string | null; finished_at: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; round_id: string; draw_id: string; team_a_id: string; team_b_id: string; scheduled_at?: string | null; status?: string; score_a?: number; score_b?: number; notes?: string | null; started_at?: string | null; finished_at?: string | null; created_at?: string; updated_at?: string }
+        Update: { id?: string; round_id?: string; draw_id?: string; team_a_id?: string; team_b_id?: string; scheduled_at?: string | null; status?: string; score_a?: number; score_b?: number; notes?: string | null; started_at?: string | null; finished_at?: string | null; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
+      match_goals: {
+        Row: { id: string; match_id: string; player_id: string; team_id: string; minute: number | null; created_at: string; updated_at: string }
+        Insert: { id?: string; match_id: string; player_id: string; team_id: string; minute?: number | null; created_at?: string; updated_at?: string }
+        Update: { id?: string; match_id?: string; player_id?: string; team_id?: string; minute?: number | null; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
       draw_team_players: {
         Row: {
           draw_id: string
@@ -422,6 +434,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_match: { Args: { p_round_id: string; p_draw_id: string; p_team_a_id: string; p_team_b_id: string; p_scheduled_at?: string | null; p_notes?: string | null }; Returns: string }
+      start_match: { Args: { p_match_id: string }; Returns: undefined }
+      set_match_score: { Args: { p_match_id: string; p_score_a: number; p_score_b: number }; Returns: undefined }
+      register_match_goal: { Args: { p_match_id: string; p_player_id: string; p_team_id: string; p_minute?: number | null }; Returns: string }
+      update_match_goal: { Args: { p_goal_id: string; p_player_id: string; p_team_id: string; p_minute?: number | null }; Returns: undefined }
+      delete_match_goal: { Args: { p_goal_id: string }; Returns: undefined }
+      finish_match: { Args: { p_match_id: string }; Returns: undefined }
+      cancel_match: { Args: { p_match_id: string }; Returns: undefined }
       confirm_draw: { Args: { p_draw_id: string }; Returns: undefined }
       has_role: {
         Args: {

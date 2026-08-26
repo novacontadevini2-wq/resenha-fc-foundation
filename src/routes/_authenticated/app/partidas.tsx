@@ -1,0 +1,90 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+
+import { LoadingState, EmptyState, ErrorState } from "@/components/feedback/states";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { MatchCard, type MatchCardData } from "@/components/matches/MatchCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SectionCard } from "@/components/ui/section-card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import type { Draw, Match, MatchStatus, MatchTeam, Round } from "@/types";
+
+type DrawSummary = Pick<Draw, "id" | "round_id" | "status">;
+
+export const Route = createFileRoute("/_authenticated/app/partidas")({
+  head: () => ({ meta: [{ title: "Partidas | Resenha FC" }] }),
+  component: MatchesPage,
+});
+
+function MatchesPage() {
+  const { isAdmin } = useAuth();
+  const [matches, setMatches] = useState<MatchCardData[]>([]);
+  const [rounds, setRounds] = useState<Round[]>([]);
+  const [draws, setDraws] = useState<DrawSummary[]>([]);
+  const [teams, setTeams] = useState<MatchTeam[]>([]);
+  const [roundFilter, setRoundFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<MatchStatus | "all">("all");
+  const [dateFilter, setDateFilter] = useState("");
+  const [roundId, setRoundId] = useState("");
+  const [drawId, setDrawId] = useState("");
+  const [teamAId, setTeamAId] = useState("");
+  const [teamBId, setTeamBId] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  async function loadMatches() {
+    setLoading(true);
+    const [{ data: matchData, error: matchError }, { data: roundData, error: roundError }, { data: drawData }] = await Promise.all([
+      supabase.from("matches").select("*").order("scheduled_at", { ascending: true, nullsFirst: false }),
+      supabase.from("rounds").select("*").order("scheduled_date", { ascending: true }),
+      supabase.from("draws").select("id, round_id, status").eq("status", "confirmed"),
+    ]);
+    if (matchError || roundError) { setError(true); setLoading(false); return; }
+    const nextRounds = (roundData ?? []) as Round[];
+    const nextMatches = (matchData ?? []) as Match[];
+    const nextDraws = (drawData ?? []) as DrawSummary[];
+    const teamIds = [...new Set(nextMatches.flatMap((match) => [match.team_a_id, match.team_b_id]))];
+    const { data: teamData } = teamIds.length ? await supabase.from("draw_teams").select("id, draw_id, team_number, total_rating").in("id", teamIds) : { data: [] };
+    const teamMap = new Map(((teamData ?? []) as MatchTeam[]).map((team) => [team.id, team]));
+    const roundMap = new Map(nextRounds.map((round) => [round.id, round]));
+    setRounds(nextRounds); setDraws(nextDraws); setTeams((teamData ?? []) as MatchTeam[]);
+    setMatches(nextMatches.map((match) => ({ ...match, roundLabel: formatRound(roundMap.get(match.round_id)), teamALabel: teamLabel(teamMap.get(match.team_a_id)), teamBLabel: teamLabel(teamMap.get(match.team_b_id)) })));
+    setLoading(false);
+  }
+
+  useEffect(() => { void loadMatches(); }, []);
+
+  const selectedDraws = useMemo(() => draws.filter((draw) => !roundId || draw.round_id === roundId), [draws, roundId]);
+  const selectedTeams = useMemo(() => teams.filter((team) => team.draw_id === drawId), [teams, drawId]);
+  const visibleMatches = useMemo(() => matches.filter((match) => {
+    const date = match.scheduled_at?.slice(0, 10) ?? match.roundLabel.split("/").reverse().join("-");
+    return (roundFilter === "all" || match.round_id === roundFilter) && (statusFilter === "all" || match.status === statusFilter) && (!dateFilter || date === dateFilter);
+  }), [dateFilter, matches, roundFilter, statusFilter]);
+
+  async function createMatch(event: React.FormEvent) {
+    event.preventDefault();
+    if (!roundId || !drawId || !teamAId || !teamBId || teamAId === teamBId) { toast.error("Selecione rodada, sorteio e duas equipes diferentes."); return; }
+    setSaving(true);
+    const { error: createError } = await supabase.rpc("create_match", { p_round_id: roundId, p_draw_id: drawId, p_team_a_id: teamAId, p_team_b_id: teamBId, p_scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null, p_notes: notes || null });
+    setSaving(false);
+    if (createError) toast.error("Não foi possível criar a partida. Verifique a rodada e as equipes.");
+    else { toast.success("Partida criada com sucesso."); setRoundId(""); setDrawId(""); setTeamAId(""); setTeamBId(""); setScheduledAt(""); setNotes(""); await loadMatches(); }
+  }
+
+  return <AppLayout title="Partidas" subtitle="Acompanhe os confrontos e resultados do Resenha FC.">
+    {isAdmin ? <SectionCard title="Nova partida" icon={Plus} className="mb-5"><form onSubmit={createMatch} className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium text-navy">Rodada<Select value={roundId} onValueChange={(value) => { setRoundId(value); setDrawId(""); setTeamAId(""); setTeamBId(""); }}><SelectTrigger><SelectValue placeholder="Selecione a rodada" /></SelectTrigger><SelectContent>{rounds.filter((round) => round.status !== "cancelled").map((round) => <SelectItem key={round.id} value={round.id}>{formatRound(round)}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Sorteio confirmado<Select value={drawId} onValueChange={(value) => { setDrawId(value); setTeamAId(""); setTeamBId(""); }} disabled={!roundId}><SelectTrigger><SelectValue placeholder="Selecione o sorteio" /></SelectTrigger><SelectContent>{selectedDraws.map((draw) => <SelectItem key={draw.id} value={draw.id}>Sorteio {draw.id.slice(0, 8)}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Equipe A<Select value={teamAId} onValueChange={setTeamAId} disabled={!drawId}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{selectedTeams.map((team) => <SelectItem key={team.id} value={team.id}>{teamLabel(team)}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Equipe B<Select value={teamBId} onValueChange={setTeamBId} disabled={!drawId}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{selectedTeams.filter((team) => team.id !== teamAId).map((team) => <SelectItem key={team.id} value={team.id}>{teamLabel(team)}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Data e horário<Input type="datetime-local" value={scheduledAt} onChange={(event) => setScheduledAt(event.target.value)} /></label><label className="grid gap-1 text-sm font-medium text-navy">Observações<Input value={notes} onChange={(event) => setNotes(event.target.value)} /></label><Button disabled={saving || !roundId || !drawId || !teamAId || !teamBId}>{saving ? "Salvando..." : "Criar partida"}</Button></form></SectionCard> : null}
+    <div className="mb-5 grid gap-3 sm:grid-cols-3"><label className="grid gap-1 text-sm font-medium text-navy">Rodada<Select value={roundFilter} onValueChange={setRoundFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todas as rodadas</SelectItem>{rounds.map((round) => <SelectItem key={round.id} value={round.id}>{formatRound(round)}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Status<Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as MatchStatus | "all")}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todos</SelectItem><SelectItem value="scheduled">Agendadas</SelectItem><SelectItem value="in_progress">Em andamento</SelectItem><SelectItem value="finished">Finalizadas</SelectItem><SelectItem value="cancelled">Canceladas</SelectItem></SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Data<Input type="date" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} /></label></div>
+    {loading ? <LoadingState label="Carregando partidas..." /> : error ? <ErrorState title="Não foi possível carregar as partidas." onRetry={() => void loadMatches()} /> : visibleMatches.length === 0 ? <EmptyState title="Nenhuma partida encontrada." /> : <div className="grid gap-3">{visibleMatches.map((match) => <MatchCard key={match.id} match={match} admin={isAdmin} />)}</div>}
+  </AppLayout>;
+}
+
+function formatRound(round?: Round) { return round ? new Date(`${round.scheduled_date}T12:00:00`).toLocaleDateString("pt-BR") : "Rodada"; }
+function teamLabel(team?: MatchTeam) { return team ? `Time ${team.team_number}` : "Equipe"; }
