@@ -10,27 +10,143 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
-      draws: {
-        Row: { id: string; round_id: string; teams_count: number; players_per_team: number; algorithm_version: string; status: string; balance_score: number; created_by: string; created_at: string; confirmed_at: string | null }
-        Insert: { id?: string; round_id: string; teams_count: number; players_per_team: number; algorithm_version?: string; status?: string; balance_score?: number; created_by: string; created_at?: string; confirmed_at?: string | null }
-        Update: { id?: string; round_id?: string; teams_count?: number; players_per_team?: number; algorithm_version?: string; status?: string; balance_score?: number; created_by?: string; created_at?: string; confirmed_at?: string | null }
-        Relationships: []
+      draw_team_players: {
+        Row: {
+          draw_id: string
+          id: string
+          photo_url_snapshot: string | null
+          player_id: string
+          player_name_snapshot: string
+          position_code_snapshot: string | null
+          position_name_snapshot: string | null
+          rating_snapshot: number
+          team_id: string
+        }
+        Insert: {
+          draw_id: string
+          id?: string
+          photo_url_snapshot?: string | null
+          player_id: string
+          player_name_snapshot: string
+          position_code_snapshot?: string | null
+          position_name_snapshot?: string | null
+          rating_snapshot: number
+          team_id: string
+        }
+        Update: {
+          draw_id?: string
+          id?: string
+          photo_url_snapshot?: string | null
+          player_id?: string
+          player_name_snapshot?: string
+          position_code_snapshot?: string | null
+          position_name_snapshot?: string | null
+          rating_snapshot?: number
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "draw_team_players_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "draws"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "draw_team_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "draw_team_players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "draw_teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       draw_teams: {
-        Row: { id: string; draw_id: string; team_number: number; total_rating: number }
-        Insert: { id?: string; draw_id: string; team_number: number; total_rating?: number }
-        Update: { id?: string; draw_id?: string; team_number?: number; total_rating?: number }
-        Relationships: []
+        Row: {
+          draw_id: string
+          id: string
+          team_number: number
+          total_rating: number
+        }
+        Insert: {
+          draw_id: string
+          id?: string
+          team_number: number
+          total_rating?: number
+        }
+        Update: {
+          draw_id?: string
+          id?: string
+          team_number?: number
+          total_rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "draw_teams_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "draws"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      draw_team_players: {
-        Row: { id: string; draw_id: string; team_id: string; player_id: string; player_name_snapshot: string; rating_snapshot: number; position_code_snapshot: string | null; position_name_snapshot: string | null; photo_url_snapshot: string | null }
-        Insert: { id?: string; draw_id: string; team_id: string; player_id: string; player_name_snapshot: string; rating_snapshot: number; position_code_snapshot?: string | null; position_name_snapshot?: string | null; photo_url_snapshot?: string | null }
-        Update: { id?: string; draw_id?: string; team_id?: string; player_id?: string; player_name_snapshot?: string; rating_snapshot?: number; position_code_snapshot?: string | null; position_name_snapshot?: string | null; photo_url_snapshot?: string | null }
-        Relationships: []
+      draws: {
+        Row: {
+          algorithm_version: string
+          balance_score: number
+          confirmed_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          players_per_team: number
+          round_id: string
+          status: string
+          teams_count: number
+        }
+        Insert: {
+          algorithm_version?: string
+          balance_score?: number
+          confirmed_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          players_per_team: number
+          round_id: string
+          status?: string
+          teams_count: number
+        }
+        Update: {
+          algorithm_version?: string
+          balance_score?: number
+          confirmed_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          players_per_team?: number
+          round_id?: string
+          status?: string
+          teams_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "draws_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       player_positions: {
         Row: {
@@ -306,7 +422,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      perform_draw: { Args: { p_round_id: string; p_teams_count: number; p_players_per_team: number; p_player_ids: string[] }; Returns: string }
       confirm_draw: { Args: { p_draw_id: string }; Returns: undefined }
       has_role: {
         Args: {
@@ -314,6 +429,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      perform_draw: {
+        Args: {
+          p_player_ids: string[]
+          p_players_per_team: number
+          p_round_id: string
+          p_teams_count: number
+        }
+        Returns: string
       }
     }
     Enums: {
