@@ -32,33 +32,6 @@ export type Database = {
         Update: { id?: string; draw_id?: string; team_id?: string; player_id?: string; player_name_snapshot?: string; rating_snapshot?: number; position_code_snapshot?: string | null; position_name_snapshot?: string | null; photo_url_snapshot?: string | null }
         Relationships: []
       }
-      round_players: {
-        Row: {
-          id: string
-          round_id: string
-          player_id: string
-          participation_status: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          round_id: string
-          player_id: string
-          participation_status?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          round_id?: string
-          player_id?: string
-          participation_status?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       player_positions: {
         Row: {
           id: string
