@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Crown, Shield, Target, Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState, ErrorState, LoadingState } from "@/components/feedback/states";
@@ -9,7 +9,13 @@ import { MatchCard, type MatchCardData } from "@/components/matches/MatchCard";
 import { MatchStatusBadge } from "@/components/matches/MatchStatusBadge";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -52,7 +58,7 @@ function TournamentDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     const { data: tournamentData, error: tournamentError } = await supabase
       .from("tournaments")
@@ -148,13 +154,15 @@ function TournamentDetailsPage() {
         1,
       ),
     );
-    setAvailableTeams(((teamsData ?? []) as MatchTeam[]).filter((team) => !tournamentTeamIds.has(team.id)));
+    setAvailableTeams(
+      ((teamsData ?? []) as MatchTeam[]).filter((team) => !tournamentTeamIds.has(team.id)),
+    );
     setLoading(false);
-  }
+  }, [id]);
 
   useEffect(() => {
     void load();
-  }, [id]);
+  }, [load]);
   async function changeStatus(status: Tournament["status"]) {
     if (!tournament || !window.confirm(`Alterar status do torneio para ${status}?`)) return;
     const { error: updateError } = await supabase.rpc("set_tournament_status", {
@@ -169,9 +177,16 @@ function TournamentDetailsPage() {
   }
   async function addTeam() {
     if (!selectedTeamId) return;
-    const { error: addError } = await supabase.rpc("add_tournament_team", { p_tournament_id: id, p_team_id: selectedTeamId });
+    const { error: addError } = await supabase.rpc("add_tournament_team", {
+      p_tournament_id: id,
+      p_team_id: selectedTeamId,
+    });
     if (addError) toast.error("Não foi possível adicionar a equipe ao torneio.");
-    else { toast.success("Equipe adicionada ao torneio."); setSelectedTeamId(""); await load(); }
+    else {
+      toast.success("Equipe adicionada ao torneio.");
+      setSelectedTeamId("");
+      await load();
+    }
   }
   if (loading)
     return (
@@ -240,19 +255,19 @@ function TournamentDetailsPage() {
         <Highlight
           icon={Crown}
           title="Artilheiro"
-          name={scorer?.playerName}
+          {...(scorer?.playerName ? { name: scorer.playerName } : {})}
           detail={scorer ? `${scorer.total} gols` : "Nenhum gol registrado."}
         />
         <Highlight
           icon={Target}
           title="Garçom"
-          name={assister?.playerName}
+          {...(assister?.playerName ? { name: assister.playerName } : {})}
           detail={assister ? `${assister.total} assistências` : "Nenhuma assistência registrada."}
         />
         <Highlight
           icon={Shield}
           title="Paredão"
-          name={goalkeeper?.playerName}
+          {...(goalkeeper?.playerName ? { name: goalkeeper.playerName } : {})}
           detail={
             goalkeeper
               ? `${goalkeeper.cleanSheets} clean sheets · índice ${goalkeeper.performanceIndex}`
@@ -260,7 +275,27 @@ function TournamentDetailsPage() {
           }
         />
       </div>
-      {isAdmin ? <SectionCard title="Equipes do torneio" icon={Trophy} className="mt-5"><div className="flex flex-wrap gap-2"><Select value={selectedTeamId} onValueChange={setSelectedTeamId}><SelectTrigger className="w-56"><SelectValue placeholder="Adicionar equipe" /></SelectTrigger><SelectContent>{availableTeams.map((team) => <SelectItem key={team.id} value={team.id}>{teamLabel(team)}</SelectItem>)}</SelectContent></Select><Button onClick={() => void addTeam()} disabled={!selectedTeamId}>Adicionar equipe</Button></div></SectionCard> : null}
+      {isAdmin ? (
+        <SectionCard title="Equipes do torneio" icon={Trophy} className="mt-5">
+          <div className="flex flex-wrap gap-2">
+            <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder="Adicionar equipe" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableTeams.map((team) => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {teamLabel(team)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={() => void addTeam()} disabled={!selectedTeamId}>
+              Adicionar equipe
+            </Button>
+          </div>
+        </SectionCard>
+      ) : null}
       <div className="mt-5 grid gap-5">
         <SectionCard title="Classificação" icon={Trophy}>
           {standings.length ? (

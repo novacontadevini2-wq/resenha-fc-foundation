@@ -121,7 +121,7 @@ function PrincipalPage() {
           <NextRoundCard
             round={nextRound}
             confirmedCount={confirmedCount}
-            personalStatus={personal?.status}
+            {...(personal?.status ? { personalStatus: personal.status } : {})}
           />
         ) : (
           <SectionCard title="Próxima resenha" icon={CalendarDays}>

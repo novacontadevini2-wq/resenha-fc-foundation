@@ -52,9 +52,14 @@ function AnnouncementsAdminPage() {
     }
     setSaving(true);
     const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
+      setSaving(false);
+      toast.error("Sua sessão expirou. Entre novamente para continuar.");
+      return;
+    }
     const { error: saveError } = await supabase
       .from("announcements")
-      .insert({ title: title.trim(), content: content.trim(), created_by: userData.user?.id });
+      .insert({ title: title.trim(), content: content.trim(), created_by: userData.user.id });
     setSaving(false);
     if (saveError) toast.error("Não foi possível criar o aviso.");
     else {

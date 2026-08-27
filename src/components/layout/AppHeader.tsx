@@ -20,8 +20,8 @@ export function AppHeader() {
 
   return (
     <header className="surface-navy sticky top-0 z-30 border-b border-white/10">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-        <BrandMark size="sm" tone="light" />
+      <div className="mx-auto flex min-w-0 max-w-3xl items-center justify-between gap-3 px-4 py-3">
+        <BrandMark size="sm" tone="light" className="min-w-0" />
         <div className="flex items-center gap-2">
           <NotificationBell />
           <Badge className="bg-orange/15 text-orange hover:bg-orange/15">

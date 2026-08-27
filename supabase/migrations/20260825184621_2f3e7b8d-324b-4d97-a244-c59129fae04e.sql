@@ -1,4 +1,3 @@
-CREATE POLICY "player_photos_read" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'player-photos');
-CREATE POLICY "player_photos_admin_insert" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'player-photos' AND public.has_role(auth.uid(), 'admin'::public.app_role));
-CREATE POLICY "player_photos_admin_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'player-photos' AND public.has_role(auth.uid(), 'admin'::public.app_role)) WITH CHECK (bucket_id = 'player-photos' AND public.has_role(auth.uid(), 'admin'::public.app_role));
-CREATE POLICY "player_photos_admin_delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'player-photos' AND public.has_role(auth.uid(), 'admin'::public.app_role));
+-- Duplicate storage policies were already created by
+-- 20260825103000_player_photos_storage.sql.
+-- Keep this migration in the timeline without recreating those policies.

@@ -11,9 +11,9 @@ interface AppLayoutProps {
 
 export function AppLayout({ title, subtitle, children }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="app-shell min-h-screen bg-background pb-24">
       <AppHeader />
-      <main className="mx-auto w-full max-w-3xl px-4 py-5">
+      <main className="app-main mx-auto w-full max-w-3xl px-4 py-5">
         {title ? (
           <div className="mb-4">
             <h1 className="text-title text-navy">{title}</h1>

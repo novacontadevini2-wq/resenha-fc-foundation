@@ -23,12 +23,12 @@ export function BottomNav() {
       className="surface-navy fixed inset-x-0 bottom-0 z-40 border-t border-white/10 shadow-nav"
       aria-label="Navegação principal"
     >
-      <ul className="mx-auto flex max-w-3xl items-stretch">
+      <ul className="bottom-nav-list mx-auto flex max-w-3xl items-stretch">
         {navItems.map((item) => (
           <li key={item.to} className="flex-1">
             <Link
               to={item.to}
-              className="flex min-h-16 flex-col items-center justify-center gap-1 px-1 py-2 text-navy-foreground/65 transition-colors"
+              className="bottom-nav-link flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-navy-foreground/65 transition-colors"
               activeProps={{ className: "!text-orange" }}
             >
               {({ isActive }) => (
@@ -41,7 +41,7 @@ export function BottomNav() {
                   >
                     <item.icon className="size-5" />
                   </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-wide">
+                  <span className="bottom-nav-label text-[11px] font-semibold uppercase tracking-wide">
                     {item.label}
                   </span>
                 </>

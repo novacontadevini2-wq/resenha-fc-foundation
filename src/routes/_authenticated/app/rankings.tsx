@@ -186,7 +186,11 @@ function RankingsPage() {
         <RankingSection
           title="Artilharia"
           icon={Goal}
-          rows={scorerRows.map((row) => ({ name: row.playerName, value: `${row.total} gols`, total: row.total }))}
+          rows={scorerRows.map((row) => ({
+            name: row.playerName,
+            value: `${row.total} gols`,
+            total: row.total,
+          }))}
           empty="Nenhum gol registrado."
         />
         <RankingSection
@@ -240,7 +244,7 @@ function RankingSection({
         <div className="grid gap-2">
           {rows.map((row, index) => {
             const rank =
-              index === 0 || row.total !== rows[index - 1].total
+              index === 0 || row.total !== rows[index - 1]?.total
                 ? index + 1
                 : rows.findIndex((item) => item.total === row.total) + 1;
             return (
