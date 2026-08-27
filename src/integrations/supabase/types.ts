@@ -148,6 +148,138 @@ export type Database = {
           },
         ]
       }
+      match_goals: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          minute: number | null
+          player_id: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          minute?: number | null
+          player_id: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          minute?: number | null
+          player_id?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_goals_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_goals_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_goals_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "draw_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          created_at: string
+          draw_id: string
+          finished_at: string | null
+          id: string
+          notes: string | null
+          round_id: string
+          scheduled_at: string | null
+          score_a: number
+          score_b: number
+          started_at: string | null
+          status: string
+          team_a_id: string
+          team_b_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          draw_id: string
+          finished_at?: string | null
+          id?: string
+          notes?: string | null
+          round_id: string
+          scheduled_at?: string | null
+          score_a?: number
+          score_b?: number
+          started_at?: string | null
+          status?: string
+          team_a_id: string
+          team_b_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          draw_id?: string
+          finished_at?: string | null
+          id?: string
+          notes?: string | null
+          round_id?: string
+          scheduled_at?: string | null
+          score_a?: number
+          score_b?: number
+          started_at?: string | null
+          status?: string
+          team_a_id?: string
+          team_b_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "draws"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team_a_id_fkey"
+            columns: ["team_a_id"]
+            isOneToOne: false
+            referencedRelation: "draw_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team_b_id_fkey"
+            columns: ["team_b_id"]
+            isOneToOne: false
+            referencedRelation: "draw_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_positions: {
         Row: {
           id: string
@@ -422,7 +554,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_match: { Args: { p_match_id: string }; Returns: undefined }
       confirm_draw: { Args: { p_draw_id: string }; Returns: undefined }
+      create_match: {
+        Args: {
+          p_draw_id: string
+          p_notes?: string
+          p_round_id: string
+          p_scheduled_at?: string
+          p_team_a_id: string
+          p_team_b_id: string
+        }
+        Returns: string
+      }
+      delete_match_goal: { Args: { p_goal_id: string }; Returns: undefined }
+      finish_match: { Args: { p_match_id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -438,6 +584,38 @@ export type Database = {
           p_teams_count: number
         }
         Returns: string
+      }
+      register_match_goal: {
+        Args: {
+          p_match_id: string
+          p_minute?: number
+          p_player_id: string
+          p_team_id: string
+        }
+        Returns: string
+      }
+      set_match_score: {
+        Args: { p_match_id: string; p_score_a: number; p_score_b: number }
+        Returns: undefined
+      }
+      start_match: { Args: { p_match_id: string }; Returns: undefined }
+      update_match_goal: {
+        Args: {
+          p_goal_id: string
+          p_minute?: number
+          p_player_id: string
+          p_team_id: string
+        }
+        Returns: undefined
+      }
+      validate_match_teams: {
+        Args: {
+          p_draw_id: string
+          p_round_id: string
+          p_team_a_id: string
+          p_team_b_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
