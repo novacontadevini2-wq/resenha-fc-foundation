@@ -14,66 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      club_settings: {
-        Row: { key: string; value: Json; updated_by: string | null; updated_at: string }
-        Insert: { key: string; value?: Json; updated_by?: string | null; updated_at?: string }
-        Update: { key?: string; value?: Json; updated_by?: string | null; updated_at?: string }
-        Relationships: []
-      }
-      audit_logs: {
-        Row: { id: string; user_id: string | null; action: string; entity_type: string; entity_id: string | null; before_data: Json | null; after_data: Json | null; created_at: string }
-        Insert: { id?: string; user_id?: string | null; action: string; entity_type: string; entity_id?: string | null; before_data?: Json | null; after_data?: Json | null; created_at?: string }
-        Update: { id?: string; user_id?: string | null; action?: string; entity_type?: string; entity_id?: string | null; before_data?: Json | null; after_data?: Json | null; created_at?: string }
-        Relationships: []
-      }
-      notifications: {
-        Row: { id: string; user_id: string; type: string; title: string; message: string; related_entity_type: string | null; related_entity_id: string | null; event_key: string; read_at: string | null; created_at: string }
-        Insert: { id?: string; user_id: string; type: string; title: string; message: string; related_entity_type?: string | null; related_entity_id?: string | null; event_key: string; read_at?: string | null; created_at?: string }
-        Update: { id?: string; user_id?: string; type?: string; title?: string; message?: string; related_entity_type?: string | null; related_entity_id?: string | null; event_key?: string; read_at?: string | null; created_at?: string }
-        Relationships: []
-      }
-      announcements: {
-        Row: { id: string; title: string; content: string; status: string; published_at: string | null; expires_at: string | null; created_by: string; created_at: string; updated_at: string }
-        Insert: { id?: string; title: string; content: string; status?: string; published_at?: string | null; expires_at?: string | null; created_by: string; created_at?: string; updated_at?: string }
-        Update: { id?: string; title?: string; content?: string; status?: string; published_at?: string | null; expires_at?: string | null; created_by?: string; created_at?: string; updated_at?: string }
-        Relationships: []
-      }
-      tournaments: {
-        Row: { id: string; season_id: string; name: string; start_date: string | null; end_date: string | null; description: string | null; points_win: number; points_draw: number; points_loss: number; status: string; created_at: string; updated_at: string }
-        Insert: { id?: string; season_id: string; name: string; start_date?: string | null; end_date?: string | null; description?: string | null; points_win?: number; points_draw?: number; points_loss?: number; status?: string; created_at?: string; updated_at?: string }
-        Update: { id?: string; season_id?: string; name?: string; start_date?: string | null; end_date?: string | null; description?: string | null; points_win?: number; points_draw?: number; points_loss?: number; status?: string; created_at?: string; updated_at?: string }
-        Relationships: []
-      }
-      tournament_teams: {
-        Row: { id: string; tournament_id: string; team_id: string; created_at: string }
-        Insert: { id?: string; tournament_id: string; team_id: string; created_at?: string }
-        Update: { id?: string; tournament_id?: string; team_id?: string; created_at?: string }
-        Relationships: []
-      }
-      match_assists: {
-        Row: { id: string; goal_id: string; match_id: string; player_id: string; team_id: string; created_by: string; created_at: string; updated_at: string }
-        Insert: { id?: string; goal_id: string; match_id: string; player_id: string; team_id: string; created_by: string; created_at?: string; updated_at?: string }
-        Update: { id?: string; goal_id?: string; match_id?: string; player_id?: string; team_id?: string; created_by?: string; created_at?: string; updated_at?: string }
-        Relationships: []
-      }
-      goalkeeper_stats: {
-        Row: { id: string; match_id: string; player_id: string; team_id: string; goals_conceded: number; saves: number | null; created_at: string; updated_at: string }
-        Insert: { id?: string; match_id: string; player_id: string; team_id: string; goals_conceded?: number; saves?: number | null; created_at?: string; updated_at?: string }
-        Update: { id?: string; match_id?: string; player_id?: string; team_id?: string; goals_conceded?: number; saves?: number | null; created_at?: string; updated_at?: string }
-        Relationships: []
-      }
-      matches: {
-        Row: { id: string; round_id: string; draw_id: string; tournament_id: string | null; team_a_id: string; team_b_id: string; scheduled_at: string | null; status: string; score_a: number; score_b: number; notes: string | null; started_at: string | null; finished_at: string | null; created_at: string; updated_at: string }
-        Insert: { id?: string; round_id: string; draw_id: string; tournament_id?: string | null; team_a_id: string; team_b_id: string; scheduled_at?: string | null; status?: string; score_a?: number; score_b?: number; notes?: string | null; started_at?: string | null; finished_at?: string | null; created_at?: string; updated_at?: string }
-        Update: { id?: string; round_id?: string; draw_id?: string; tournament_id?: string | null; team_a_id?: string; team_b_id?: string; scheduled_at?: string | null; status?: string; score_a?: number; score_b?: number; notes?: string | null; started_at?: string | null; finished_at?: string | null; created_at?: string; updated_at?: string }
-        Relationships: []
-      }
-      match_goals: {
-        Row: { id: string; match_id: string; player_id: string; team_id: string; minute: number | null; created_at: string; updated_at: string }
-        Insert: { id?: string; match_id: string; player_id: string; team_id: string; minute?: number | null; created_at?: string; updated_at?: string }
-        Update: { id?: string; match_id?: string; player_id?: string; team_id?: string; minute?: number | null; created_at?: string; updated_at?: string }
-        Relationships: []
-      }
       draw_team_players: {
         Row: {
           draw_id: string
@@ -482,25 +422,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      update_club_settings: { Args: { p_key: string; p_value: Json }; Returns: undefined }
-      get_admin_settings: { Args: Record<string, never>; Returns: { key: string; value: Json; updated_by: string | null; updated_at: string }[] }
-      attach_match_to_tournament: { Args: { p_match_id: string; p_tournament_id: string }; Returns: undefined }
-      add_tournament_team: { Args: { p_tournament_id: string; p_team_id: string }; Returns: string }
-      ensure_presence_reminder: { Args: { p_round_id: string }; Returns: string | null }
-      publish_announcement: { Args: { p_announcement_id: string }; Returns: undefined }
-      unpublish_announcement: { Args: { p_announcement_id: string }; Returns: undefined }
-      set_tournament_status: { Args: { p_tournament_id: string; p_status: string }; Returns: undefined }
-      register_match_goal_with_assist: { Args: { p_match_id: string; p_player_id: string; p_team_id: string; p_minute?: number | null; p_assist_player_id?: string | null }; Returns: string }
-      upsert_goalkeeper_stats: { Args: { p_match_id: string; p_player_id: string; p_team_id: string; p_goals_conceded: number; p_saves?: number | null }; Returns: string }
-      update_match_goal_with_assist: { Args: { p_goal_id: string; p_player_id: string; p_team_id: string; p_minute?: number | null; p_assist_player_id?: string | null }; Returns: undefined }
-      create_match: { Args: { p_round_id: string; p_draw_id: string; p_team_a_id: string; p_team_b_id: string; p_scheduled_at?: string | null; p_notes?: string | null }; Returns: string }
-      start_match: { Args: { p_match_id: string }; Returns: undefined }
-      set_match_score: { Args: { p_match_id: string; p_score_a: number; p_score_b: number }; Returns: undefined }
-      register_match_goal: { Args: { p_match_id: string; p_player_id: string; p_team_id: string; p_minute?: number | null }; Returns: string }
-      update_match_goal: { Args: { p_goal_id: string; p_player_id: string; p_team_id: string; p_minute?: number | null }; Returns: undefined }
-      delete_match_goal: { Args: { p_goal_id: string }; Returns: undefined }
-      finish_match: { Args: { p_match_id: string }; Returns: undefined }
-      cancel_match: { Args: { p_match_id: string }; Returns: undefined }
       confirm_draw: { Args: { p_draw_id: string }; Returns: undefined }
       has_role: {
         Args: {
