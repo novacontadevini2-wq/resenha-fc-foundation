@@ -53,6 +53,7 @@ export interface Match {
   id: string;
   round_id: string;
   draw_id: string;
+  tournament_id: string | null;
   team_a_id: string;
   team_b_id: string;
   scheduled_at: string | null;
@@ -90,6 +91,43 @@ export interface MatchGoal {
   player_id: string;
   team_id: string;
   minute: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MatchAssist {
+  id: string;
+  goal_id: string;
+  match_id: string;
+  player_id: string;
+  team_id: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MatchGoalkeeperStat {
+  id: string;
+  match_id: string;
+  player_id: string;
+  team_id: string;
+  goals_conceded: number;
+  saves: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Tournament {
+  id: string;
+  season_id: string;
+  name: string;
+  start_date: string | null;
+  end_date: string | null;
+  description: string | null;
+  points_win: number;
+  points_draw: number;
+  points_loss: number;
+  status: "planned" | "active" | "finished" | "cancelled";
   created_at: string;
   updated_at: string;
 }

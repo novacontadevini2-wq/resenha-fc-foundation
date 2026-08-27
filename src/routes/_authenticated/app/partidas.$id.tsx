@@ -12,7 +12,7 @@ import { SectionCard } from "@/components/ui/section-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import type { Match, MatchGoal, MatchTeam, Round } from "@/types";
+import type { Match, MatchAssist, MatchGoal, MatchGoalkeeperStat, MatchTeam, Round } from "@/types";
 
 interface TeamPlayer { team_id: string; player_id: string; player_name_snapshot: string; photo_url_snapshot: string | null; }
 
@@ -29,7 +29,10 @@ function MatchDetailsPage() {
   const [teams, setTeams] = useState<MatchTeam[]>([]);
   const [teamPlayers, setTeamPlayers] = useState<TeamPlayer[]>([]);
   const [goals, setGoals] = useState<MatchGoal[]>([]);
+  const [assists, setAssists] = useState<MatchAssist[]>([]);
+  const [goalkeeperStats, setGoalkeeperStats] = useState<MatchGoalkeeperStat[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [selectedAssist, setSelectedAssist] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("");
   const [minute, setMinute] = useState("");
   const [editingGoal, setEditingGoal] = useState<MatchGoal | null>(null);
@@ -38,21 +41,27 @@ function MatchDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [working, setWorking] = useState(false);
+  const [keeperPlayer, setKeeperPlayer] = useState("");
+  const [keeperTeam, setKeeperTeam] = useState("");
+  const [goalsConceded, setGoalsConceded] = useState("");
+  const [saves, setSaves] = useState("");
 
   async function load() {
     setLoading(true);
     const { data: matchData, error: matchError } = await supabase.from("matches").select("*").eq("id", id).maybeSingle();
     if (matchError || !matchData) { setError(true); setLoading(false); return; }
     const currentMatch = matchData as Match;
-    const [{ data: roundData }, { data: teamData }, { data: goalData }] = await Promise.all([
+    const [{ data: roundData }, { data: teamData }, { data: goalData }, { data: assistData }, { data: keeperData }] = await Promise.all([
       supabase.from("rounds").select("*").eq("id", currentMatch.round_id).maybeSingle(),
       supabase.from("draw_teams").select("id, draw_id, team_number, total_rating").in("id", [currentMatch.team_a_id, currentMatch.team_b_id]),
       supabase.from("match_goals").select("*").eq("match_id", id).order("created_at"),
+      supabase.from("match_assists").select("*").eq("match_id", id),
+      supabase.from("goalkeeper_stats").select("*").eq("match_id", id),
     ]);
     const nextTeams = (teamData ?? []) as MatchTeam[];
     const { data: snapshotData } = await supabase.from("draw_team_players").select("team_id, player_id, player_name_snapshot, photo_url_snapshot").in("team_id", nextTeams.map((team) => team.id));
     const snapshotPlayers = (snapshotData ?? []) as TeamPlayer[];
-    setMatch(currentMatch); setRound((roundData ?? null) as Round | null); setTeams(nextTeams); setGoals((goalData ?? []) as MatchGoal[]); setTeamPlayers(snapshotPlayers); setScoreA(String(currentMatch.score_a)); setScoreB(String(currentMatch.score_b)); setLoading(false);
+    setMatch(currentMatch); setRound((roundData ?? null) as Round | null); setTeams(nextTeams); setGoals((goalData ?? []) as MatchGoal[]); setAssists((assistData ?? []) as MatchAssist[]); setGoalkeeperStats((keeperData ?? []) as MatchGoalkeeperStat[]); setTeamPlayers(snapshotPlayers); setScoreA(String(currentMatch.score_a)); setScoreB(String(currentMatch.score_b)); setLoading(false);
   }
 
   useEffect(() => { void load(); }, [id]);
@@ -86,7 +95,8 @@ function MatchDetailsPage() {
     const playerTeamId = teamPlayers.find((player) => player.player_id === selectedPlayer)?.team_id ?? "";
     if (!selectedPlayer || !playerTeamId || (minute && (!Number.isInteger(Number(minute)) || Number(minute) < 0))) { toast.error("Selecione um jogador e informe um minuto válido."); return; }
     setWorking(true);
-    const action = editingGoal ? supabase.rpc("update_match_goal", { p_goal_id: editingGoal.id, p_player_id: selectedPlayer, p_team_id: playerTeamId, p_minute: minute ? Number(minute) : null }) : supabase.rpc("register_match_goal", { p_match_id: id, p_player_id: selectedPlayer, p_team_id: playerTeamId, p_minute: minute ? Number(minute) : null });
+    const assistPlayerId = selectedAssist && selectedAssist !== "none" ? selectedAssist : null;
+    const action = editingGoal ? supabase.rpc("update_match_goal_with_assist", { p_goal_id: editingGoal.id, p_player_id: selectedPlayer, p_team_id: playerTeamId, p_minute: minute ? Number(minute) : null, p_assist_player_id: assistPlayerId }) : supabase.rpc("register_match_goal_with_assist", { p_match_id: id, p_player_id: selectedPlayer, p_team_id: playerTeamId, p_minute: minute ? Number(minute) : null, p_assist_player_id: assistPlayerId });
     const { error: goalError } = await action; setWorking(false);
     if (goalError) toast.error("Não foi possível salvar o gol. Confirme o jogador e a equipe."); else { toast.success(editingGoal ? "Gol atualizado com sucesso." : "Gol registrado."); resetGoalForm(); await load(); }
   }
@@ -97,8 +107,17 @@ function MatchDetailsPage() {
     if (deleteError) toast.error("Não foi possível remover o gol."); else { toast.success("Gol removido."); await load(); }
   }
 
-  function editGoal(goal: MatchGoal) { setEditingGoal(goal); setSelectedTeam(goal.team_id); setSelectedPlayer(goal.player_id); setMinute(goal.minute?.toString() ?? ""); }
-  function resetGoalForm() { setEditingGoal(null); setSelectedTeam(""); setSelectedPlayer(""); setMinute(""); }
+  async function saveGoalkeeper(event: React.FormEvent) {
+    event.preventDefault();
+    const conceded = Number(goalsConceded);
+    const keeper = teamPlayers.find((player) => player.player_id === keeperPlayer);
+    if (!keeper || !Number.isInteger(conceded) || conceded < 0 || (saves && (!Number.isInteger(Number(saves)) || Number(saves) < 0))) { toast.error("Informe um goleiro e valores válidos."); return; }
+    setWorking(true); const { error: keeperError } = await supabase.rpc("upsert_goalkeeper_stats", { p_match_id: id, p_player_id: keeper.player_id, p_team_id: keeper.team_id, p_goals_conceded: conceded, p_saves: saves ? Number(saves) : null }); setWorking(false);
+    if (keeperError) toast.error("Não foi possível salvar o desempenho do goleiro."); else { toast.success("Desempenho do goleiro salvo."); setKeeperPlayer(""); setGoalsConceded(""); setSaves(""); await load(); }
+  }
+
+  function editGoal(goal: MatchGoal) { setEditingGoal(goal); setSelectedTeam(goal.team_id); setSelectedPlayer(goal.player_id); setSelectedAssist(assists.find((assist) => assist.goal_id === goal.id)?.player_id ?? ""); setMinute(goal.minute?.toString() ?? ""); }
+  function resetGoalForm() { setEditingGoal(null); setSelectedTeam(""); setSelectedPlayer(""); setSelectedAssist(""); setMinute(""); }
 
   if (loading) return <AppLayout title="Partida"><LoadingState label="Carregando partida..." /></AppLayout>;
   if (error || !match) return <AppLayout title="Partida"><ErrorState title="Não foi possível carregar a partida." /></AppLayout>;
@@ -107,6 +126,7 @@ function MatchDetailsPage() {
     <Button variant="ghost" asChild className="mb-4"><Link to="/app/partidas"><ArrowLeft /> Voltar para partidas</Link></Button>
     <section className="card-surface mb-5 p-5 text-center"><div className="flex items-center justify-between gap-3 text-left"><div><p className="text-meta">{match.scheduled_at ? new Date(match.scheduled_at).toLocaleString("pt-BR") : round?.start_time?.slice(0, 5) ?? "Horário não informado"}</p><p className="text-meta">{round?.location_name ?? "Rodada"}</p></div><MatchStatusBadge status={match.status} /></div><div className="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-3"><div className="font-display text-2xl font-bold text-navy">{teamName(match.team_a_id)}</div><div className="font-display text-5xl font-bold text-navy"><span>{match.status === "scheduled" || match.status === "cancelled" ? "-" : match.score_a}</span><span className="mx-2 text-2xl text-orange">x</span><span>{match.status === "scheduled" || match.status === "cancelled" ? "-" : match.score_b}</span></div><div className="font-display text-2xl font-bold text-navy">{teamName(match.team_b_id)}</div></div>{match.notes ? <p className="text-meta mt-5">{match.notes}</p> : null}<div className="mt-6 flex flex-wrap justify-center gap-2">{isAdmin && match.status === "scheduled" ? <Button onClick={() => void callAction("start_match")} disabled={working}><CirclePlay /> Iniciar partida</Button> : null}{isAdmin && match.status === "in_progress" ? <Button variant="outline" onClick={() => void callAction("finish_match")} disabled={working}><Flag /> Finalizar partida</Button> : null}{isAdmin && ["scheduled", "in_progress"].includes(match.status) ? <Button variant="ghost" onClick={() => void callAction("cancel_match")} disabled={working}><XCircle /> Cancelar partida</Button> : null}</div></section>
     <div className="grid gap-5 sm:grid-cols-2"><SectionCard title="Equipes participantes" icon={Goal}><div className="grid gap-4">{[teamA, teamB].map((team) => <div key={team?.id}><h3 className="font-display text-lg font-bold text-navy">{team ? teamName(team.id) : "Equipe"}</h3><div className="mt-2 grid gap-1 text-sm text-muted-foreground">{teamPlayers.filter((player) => player.team_id === team?.id).map((player) => <p key={player.player_id}>{player.player_name_snapshot}</p>)}</div></div>)}</div></SectionCard><SectionCard title="Gols" icon={Goal}><div className="grid gap-2">{goals.length ? goals.map((goal) => <div key={goal.id} className="flex items-center justify-between gap-2 border-b border-border pb-2 text-sm"><span>{goal.minute != null ? `${goal.minute}' ` : ""}{playerName(goal.player_id)} · {teamName(goal.team_id)}</span>{canEdit ? <span className="flex gap-1"><Button size="sm" variant="ghost" onClick={() => editGoal(goal)}>Corrigir</Button><Button size="sm" variant="ghost" onClick={() => void deleteGoal(goal)}>Remover</Button></span> : null}</div>) : <p className="text-meta">Nenhum gol registrado.</p>}</div></SectionCard></div>
-    {canEdit ? <div className="mt-5 grid gap-5 sm:grid-cols-2"><SectionCard title={editingGoal ? "Corrigir gol" : "Registrar gol"} icon={Goal}><form onSubmit={saveGoal} className="grid gap-3"><label className="grid gap-1 text-sm font-medium text-navy">Equipe<Select value={selectedTeam} onValueChange={(value) => { setSelectedTeam(value); setSelectedPlayer(""); }}><SelectTrigger><SelectValue placeholder="Selecione a equipe" /></SelectTrigger><SelectContent><SelectItem value={match.team_a_id}>{teamName(match.team_a_id)}</SelectItem><SelectItem value={match.team_b_id}>{teamName(match.team_b_id)}</SelectItem></SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Jogador<Select value={selectedPlayer} onValueChange={setSelectedPlayer} disabled={!selectedTeam}><SelectTrigger><SelectValue placeholder="Selecione o jogador" /></SelectTrigger><SelectContent>{availablePlayers.map((player) => <SelectItem key={player.player_id} value={player.player_id}>{player.player_name_snapshot}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Minuto (opcional)<Input type="number" min="0" step="1" value={minute} onChange={(event) => setMinute(event.target.value)} /></label><div className="flex gap-2"><Button disabled={working}>{editingGoal ? "Salvar correção" : "Registrar gol"}</Button>{editingGoal ? <Button type="button" variant="ghost" onClick={resetGoalForm}>Cancelar</Button> : null}</div></form></SectionCard><SectionCard title="Corrigir placar" icon={Flag}><form onSubmit={saveScore} className="grid gap-3"><div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium text-navy">{teamName(match.team_a_id)}<Input type="number" min="0" step="1" value={scoreA} onChange={(event) => setScoreA(event.target.value)} /></label><label className="grid gap-1 text-sm font-medium text-navy">{teamName(match.team_b_id)}<Input type="number" min="0" step="1" value={scoreB} onChange={(event) => setScoreB(event.target.value)} /></label></div><p className="text-meta">O placar não pode ficar abaixo da quantidade de gols registrados.</p><Button variant="outline" disabled={working}>Salvar placar</Button></form></SectionCard></div> : null}
+    {canEdit ? <div className="mt-5 grid gap-5 sm:grid-cols-2"><SectionCard title={editingGoal ? "Corrigir gol" : "Registrar gol"} icon={Goal}><form onSubmit={saveGoal} className="grid gap-3"><label className="grid gap-1 text-sm font-medium text-navy">Equipe<Select value={selectedTeam} onValueChange={(value) => { setSelectedTeam(value); setSelectedPlayer(""); setSelectedAssist(""); }}><SelectTrigger><SelectValue placeholder="Selecione a equipe" /></SelectTrigger><SelectContent><SelectItem value={match.team_a_id}>{teamName(match.team_a_id)}</SelectItem><SelectItem value={match.team_b_id}>{teamName(match.team_b_id)}</SelectItem></SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Jogador<Select value={selectedPlayer} onValueChange={setSelectedPlayer} disabled={!selectedTeam}><SelectTrigger><SelectValue placeholder="Selecione o jogador" /></SelectTrigger><SelectContent>{availablePlayers.map((player) => <SelectItem key={player.player_id} value={player.player_id}>{player.player_name_snapshot}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Assistência (opcional)<Select value={selectedAssist} onValueChange={setSelectedAssist} disabled={!selectedPlayer}><SelectTrigger><SelectValue placeholder="Sem assistência" /></SelectTrigger><SelectContent><SelectItem value="none">Sem assistência</SelectItem>{availablePlayers.filter((player) => player.player_id !== selectedPlayer).map((player) => <SelectItem key={player.player_id} value={player.player_id}>{player.player_name_snapshot}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Minuto (opcional)<Input type="number" min="0" step="1" value={minute} onChange={(event) => setMinute(event.target.value)} /></label><div className="flex gap-2"><Button disabled={working}>{editingGoal ? "Salvar correção" : "Registrar gol"}</Button>{editingGoal ? <Button type="button" variant="ghost" onClick={resetGoalForm}>Cancelar</Button> : null}</div></form></SectionCard><SectionCard title="Corrigir placar" icon={Flag}><form onSubmit={saveScore} className="grid gap-3"><div className="grid grid-cols-2 gap-3"><label className="grid gap-1 text-sm font-medium text-navy">{teamName(match.team_a_id)}<Input type="number" min="0" step="1" value={scoreA} onChange={(event) => setScoreA(event.target.value)} /></label><label className="grid gap-1 text-sm font-medium text-navy">{teamName(match.team_b_id)}<Input type="number" min="0" step="1" value={scoreB} onChange={(event) => setScoreB(event.target.value)} /></label></div><p className="text-meta">O placar não pode ficar abaixo da quantidade de gols registrados.</p><Button variant="outline" disabled={working}>Salvar placar</Button></form></SectionCard></div> : null}
+    {isAdmin && match.status === "finished" ? <SectionCard title="Desempenho do goleiro" icon={Goal} className="mt-5"><form onSubmit={saveGoalkeeper} className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium text-navy">Goleiro<Select value={keeperPlayer} onValueChange={(value) => { setKeeperPlayer(value); setKeeperTeam(teamPlayers.find((player) => player.player_id === value)?.team_id ?? ""); }}><SelectTrigger><SelectValue placeholder="Selecione o goleiro" /></SelectTrigger><SelectContent>{teamPlayers.map((player) => <SelectItem key={player.player_id} value={player.player_id}>{player.player_name_snapshot} · {teamName(player.team_id)}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Gols sofridos<Input type="number" min="0" step="1" value={goalsConceded} onChange={(event) => setGoalsConceded(event.target.value)} /></label><label className="grid gap-1 text-sm font-medium text-navy">Defesas (opcional)<Input type="number" min="0" step="1" value={saves} onChange={(event) => setSaves(event.target.value)} /></label><div><Button disabled={working || !keeperTeam}>{goalkeeperStats.some((stat) => stat.player_id === keeperPlayer) ? "Atualizar desempenho" : "Salvar desempenho"}</Button></div></form></SectionCard> : null}
   </AppLayout>;
 }

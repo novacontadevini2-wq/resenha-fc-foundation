@@ -1,0 +1,12 @@
+import type { MatchGoal, MatchGoalkeeperStat } from "@/types";
+
+export interface PlayerRankingRow { playerId: string; playerName: string; photoUrl: string | null; total: number; }
+export interface GoalkeeperRankingRow { playerId: string; playerName: string; photoUrl: string | null; matches: number; goalsConceded: number; cleanSheets: number; saves: number | null; performanceIndex: number; }
+
+type PlayerInfo = { id: string; name: string; photo_url: string | null };
+
+export function calculateScorers(goals: MatchGoal[], players: PlayerInfo[]): PlayerRankingRow[] { return aggregate(goals.map((goal) => goal.player_id), players); }
+export function calculateAssists(assists: { player_id: string }[], players: PlayerInfo[]): PlayerRankingRow[] { return aggregate(assists.map((assist) => assist.player_id), players); }
+function aggregate(ids: string[], players: PlayerInfo[]) { const names = new Map(players.map((player) => [player.id, player])); const counts = new Map<string, number>(); ids.forEach((id) => counts.set(id, (counts.get(id) ?? 0) + 1)); return [...counts.entries()].map(([playerId, total]) => ({ playerId, playerName: names.get(playerId)?.name ?? "Jogador", photoUrl: names.get(playerId)?.photo_url ?? null, total })).sort((a, b) => b.total - a.total || a.playerName.localeCompare(b.playerName)); }
+
+export function calculateGoalkeeperRanking(stats: MatchGoalkeeperStat[], players: PlayerInfo[], minimumMatches = 1): GoalkeeperRankingRow[] { const names = new Map(players.map((player) => [player.id, player])); const grouped = new Map<string, MatchGoalkeeperStat[]>(); stats.forEach((stat) => grouped.set(stat.player_id, [...(grouped.get(stat.player_id) ?? []), stat])); return [...grouped.entries()].filter(([, rows]) => rows.length >= minimumMatches).map(([playerId, rows]) => { const goalsConceded = rows.reduce((total, row) => total + row.goals_conceded, 0); const cleanSheets = rows.filter((row) => row.goals_conceded === 0).length; const saves = rows.some((row) => row.saves !== null) ? rows.reduce((total, row) => total + (row.saves ?? 0), 0) : null; return { playerId, playerName: names.get(playerId)?.name ?? "Goleiro", photoUrl: names.get(playerId)?.photo_url ?? null, matches: rows.length, goalsConceded, cleanSheets, saves, performanceIndex: Number(((cleanSheets * 3 + (saves ?? 0) * 0.1 - goalsConceded) / rows.length).toFixed(2)) }; }).sort((a, b) => b.performanceIndex - a.performanceIndex || b.cleanSheets - a.cleanSheets || a.goalsConceded - b.goalsConceded); }
