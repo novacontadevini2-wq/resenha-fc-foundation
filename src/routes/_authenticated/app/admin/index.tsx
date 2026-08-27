@@ -66,12 +66,12 @@ function AdminDashboard() {
       const today = new Date().toISOString().slice(0, 10);
 
       const [
-        { data: players },
-        { data: matches },
-        { data: goals },
-        { data: assists },
-        { data: roundData },
-        { data: tournaments },
+        playersResult,
+        matchesResult,
+        goalsResult,
+        assistsResult,
+        roundsResult,
+        tournamentsResult,
       ] = await Promise.all([
         supabase.from("players").select("*").eq("status", "active"),
         supabase.from("matches").select("*").eq("status", "finished"),
@@ -88,13 +88,20 @@ function AdminDashboard() {
         supabase.from("tournaments").select("*").eq("status", "active").limit(1),
       ]);
 
-      if (!players || !matches || !goals || !assists) {
+      if (playersResult.error) {
         setError(true);
         setLoading(false);
         return;
       }
 
-      const nextRound = ((roundData ?? [])[0] as Round | undefined) ?? null;
+      const players = playersResult.data ?? [];
+      const matches = matchesResult.data ?? [];
+      const goals = goalsResult.data ?? [];
+      const assists = assistsResult.data ?? [];
+      const roundData = roundsResult.data ?? [];
+      const tournaments = tournamentsResult.data ?? [];
+
+      const nextRound = (roundData[0] as Round | undefined) ?? null;
       let confirmed = 0;
       let pending = 0;
       let absent = 0;
@@ -123,7 +130,7 @@ function AdminDashboard() {
         confirmed,
         pending,
         absent,
-        tournament: ((tournaments ?? [])[0] as Tournament | undefined) ?? null,
+        tournament: (tournaments[0] as Tournament | undefined) ?? null,
         scorer: calculateScorers(goals as MatchGoal[], playerList)[0]?.playerName ?? null,
         assister: calculateAssists(assists as MatchAssist[], playerList)[0]?.playerName ?? null,
       });
