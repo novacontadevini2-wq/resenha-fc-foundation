@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarDays, Shuffle, Trophy, Users } from "lucide-react";
+import { BarChart3, CalendarDays, Shuffle, Trophy, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -41,12 +41,13 @@ function PrincipalPage() {
         <QuickLink to="/app/sorteio" icon={Shuffle} label="Fazer sorteio" />
         <QuickLink to="/app/torneios" icon={Trophy} label="Torneios" />
         <QuickLink to="/app/rodadas" icon={CalendarDays} label="Rodadas" />
+        <QuickLink to="/app/rankings" icon={BarChart3} label="Rankings" />
       </section>
     </AppLayout>
   );
 }
 
-function QuickLink({ to, icon: Icon, label }: { to: "/app/jogadores" | "/app/sorteio" | "/app/torneios" | "/app/rodadas"; icon: typeof Users; label: string }) {
+function QuickLink({ to, icon: Icon, label }: { to: "/app/jogadores" | "/app/sorteio" | "/app/torneios" | "/app/rodadas" | "/app/rankings"; icon: typeof Users; label: string }) {
   return (
     <Link to={to} className="card-surface flex items-center gap-3 p-4 transition-transform hover:-translate-y-0.5">
       <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-navy"><Icon className="size-5" /></span>

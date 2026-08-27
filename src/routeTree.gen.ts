@@ -17,6 +17,7 @@ import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as AuthenticatedAppJogadoresRouteImport } from './routes/_authenticated/app/jogadores'
 import { Route as AuthenticatedAppPartidasRouteImport } from './routes/_authenticated/app/partidas'
 import { Route as AuthenticatedAppPrincipalRouteImport } from './routes/_authenticated/app/principal'
+import { Route as AuthenticatedAppRankingsRouteImport } from './routes/_authenticated/app/rankings'
 import { Route as AuthenticatedAppRodadasRouteImport } from './routes/_authenticated/app/rodadas'
 import { Route as AuthenticatedAppSorteioRouteImport } from './routes/_authenticated/app/sorteio'
 import { Route as AuthenticatedAppTorneiosRouteImport } from './routes/_authenticated/app/torneios'
@@ -68,6 +69,12 @@ const AuthenticatedAppPrincipalRoute =
   AuthenticatedAppPrincipalRouteImport.update({
     id: '/app/principal',
     path: '/app/principal',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppRankingsRoute =
+  AuthenticatedAppRankingsRouteImport.update({
+    id: '/app/rankings',
+    path: '/app/rankings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAppRodadasRoute = AuthenticatedAppRodadasRouteImport.update({
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/app/jogadores': typeof AuthenticatedAppJogadoresRouteWithChildren
   '/app/partidas': typeof AuthenticatedAppPartidasRouteWithChildren
   '/app/principal': typeof AuthenticatedAppPrincipalRoute
+  '/app/rankings': typeof AuthenticatedAppRankingsRoute
   '/app/rodadas': typeof AuthenticatedAppRodadasRouteWithChildren
   '/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/app/torneios': typeof AuthenticatedAppTorneiosRouteWithChildren
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
   '/app/jogadores': typeof AuthenticatedAppJogadoresRouteWithChildren
   '/app/partidas': typeof AuthenticatedAppPartidasRouteWithChildren
   '/app/principal': typeof AuthenticatedAppPrincipalRoute
+  '/app/rankings': typeof AuthenticatedAppRankingsRoute
   '/app/rodadas': typeof AuthenticatedAppRodadasRouteWithChildren
   '/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/app/torneios': typeof AuthenticatedAppTorneiosRouteWithChildren
@@ -177,6 +186,7 @@ export interface FileRoutesById {
   '/_authenticated/app/jogadores': typeof AuthenticatedAppJogadoresRouteWithChildren
   '/_authenticated/app/partidas': typeof AuthenticatedAppPartidasRouteWithChildren
   '/_authenticated/app/principal': typeof AuthenticatedAppPrincipalRoute
+  '/_authenticated/app/rankings': typeof AuthenticatedAppRankingsRoute
   '/_authenticated/app/rodadas': typeof AuthenticatedAppRodadasRouteWithChildren
   '/_authenticated/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/_authenticated/app/torneios': typeof AuthenticatedAppTorneiosRouteWithChildren
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/app/jogadores'
     | '/app/partidas'
     | '/app/principal'
+    | '/app/rankings'
     | '/app/rodadas'
     | '/app/sorteio'
     | '/app/torneios'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/app/jogadores'
     | '/app/partidas'
     | '/app/principal'
+    | '/app/rankings'
     | '/app/rodadas'
     | '/app/sorteio'
     | '/app/torneios'
@@ -237,6 +249,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/jogadores'
     | '/_authenticated/app/partidas'
     | '/_authenticated/app/principal'
+    | '/_authenticated/app/rankings'
     | '/_authenticated/app/rodadas'
     | '/_authenticated/app/sorteio'
     | '/_authenticated/app/torneios'
@@ -313,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: '/app/principal'
       fullPath: '/app/principal'
       preLoaderRoute: typeof AuthenticatedAppPrincipalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/rankings': {
+      id: '/_authenticated/app/rankings'
+      path: '/app/rankings'
+      fullPath: '/app/rankings'
+      preLoaderRoute: typeof AuthenticatedAppRankingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/rodadas': {
@@ -448,6 +468,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppJogadoresRoute: typeof AuthenticatedAppJogadoresRouteWithChildren
   AuthenticatedAppPartidasRoute: typeof AuthenticatedAppPartidasRouteWithChildren
   AuthenticatedAppPrincipalRoute: typeof AuthenticatedAppPrincipalRoute
+  AuthenticatedAppRankingsRoute: typeof AuthenticatedAppRankingsRoute
   AuthenticatedAppRodadasRoute: typeof AuthenticatedAppRodadasRouteWithChildren
   AuthenticatedAppSorteioRoute: typeof AuthenticatedAppSorteioRoute
   AuthenticatedAppTorneiosRoute: typeof AuthenticatedAppTorneiosRouteWithChildren
@@ -460,6 +481,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppJogadoresRoute: AuthenticatedAppJogadoresRouteWithChildren,
   AuthenticatedAppPartidasRoute: AuthenticatedAppPartidasRouteWithChildren,
   AuthenticatedAppPrincipalRoute: AuthenticatedAppPrincipalRoute,
+  AuthenticatedAppRankingsRoute: AuthenticatedAppRankingsRoute,
   AuthenticatedAppRodadasRoute: AuthenticatedAppRodadasRouteWithChildren,
   AuthenticatedAppSorteioRoute: AuthenticatedAppSorteioRoute,
   AuthenticatedAppTorneiosRoute: AuthenticatedAppTorneiosRouteWithChildren,
