@@ -158,3 +158,21 @@ export interface Announcement {
   created_at: string;
   updated_at: string;
 }
+
+export interface ClubSetting {
+  key: string;
+  value: Record<string, unknown>;
+  updated_by: string | null;
+  updated_at: string;
+}
+
+export interface AuditLog {
+  id: string;
+  user_id: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  before_data: Record<string, unknown> | null;
+  after_data: Record<string, unknown> | null;
+  created_at: string;
+}

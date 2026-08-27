@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      club_settings: {
+        Row: { key: string; value: Json; updated_by: string | null; updated_at: string }
+        Insert: { key: string; value?: Json; updated_by?: string | null; updated_at?: string }
+        Update: { key?: string; value?: Json; updated_by?: string | null; updated_at?: string }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: { id: string; user_id: string | null; action: string; entity_type: string; entity_id: string | null; before_data: Json | null; after_data: Json | null; created_at: string }
+        Insert: { id?: string; user_id?: string | null; action: string; entity_type: string; entity_id?: string | null; before_data?: Json | null; after_data?: Json | null; created_at?: string }
+        Update: { id?: string; user_id?: string | null; action?: string; entity_type?: string; entity_id?: string | null; before_data?: Json | null; after_data?: Json | null; created_at?: string }
+        Relationships: []
+      }
       notifications: {
         Row: { id: string; user_id: string; type: string; title: string; message: string; related_entity_type: string | null; related_entity_id: string | null; event_key: string; read_at: string | null; created_at: string }
         Insert: { id?: string; user_id: string; type: string; title: string; message: string; related_entity_type?: string | null; related_entity_id?: string | null; event_key: string; read_at?: string | null; created_at?: string }
@@ -470,6 +482,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      update_club_settings: { Args: { p_key: string; p_value: Json }; Returns: undefined }
+      get_admin_settings: { Args: Record<string, never>; Returns: { key: string; value: Json; updated_by: string | null; updated_at: string }[] }
       attach_match_to_tournament: { Args: { p_match_id: string; p_tournament_id: string }; Returns: undefined }
       add_tournament_team: { Args: { p_tournament_id: string; p_team_id: string }; Returns: string }
       ensure_presence_reminder: { Args: { p_round_id: string }; Returns: string | null }
