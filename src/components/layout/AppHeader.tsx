@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 import { BrandMark } from "@/components/brand/BrandMark";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +23,7 @@ export function AppHeader() {
       <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
         <BrandMark size="sm" tone="light" />
         <div className="flex items-center gap-2">
+          <NotificationBell />
           <Badge className="bg-orange/15 text-orange hover:bg-orange/15">
             {isAdmin ? "Admin" : "Jogador"}
           </Badge>

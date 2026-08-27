@@ -157,10 +157,10 @@ function TournamentDetailsPage() {
   }, [id]);
   async function changeStatus(status: Tournament["status"]) {
     if (!tournament || !window.confirm(`Alterar status do torneio para ${status}?`)) return;
-    const { error: updateError } = await supabase
-      .from("tournaments")
-      .update({ status })
-      .eq("id", tournament.id);
+    const { error: updateError } = await supabase.rpc("set_tournament_status", {
+      p_tournament_id: tournament.id,
+      p_status: status,
+    });
     if (updateError) toast.error("Não foi possível atualizar o torneio.");
     else {
       toast.success("Torneio atualizado.");

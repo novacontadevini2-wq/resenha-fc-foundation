@@ -131,3 +131,30 @@ export interface Tournament {
   created_at: string;
   updated_at: string;
 }
+
+export type NotificationType = "round" | "presence" | "draw" | "result" | "tournament" | "ranking" | "announcement";
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  related_entity_type: string | null;
+  related_entity_id: string | null;
+  event_key: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  status: "draft" | "published" | "expired";
+  published_at: string | null;
+  expires_at: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}

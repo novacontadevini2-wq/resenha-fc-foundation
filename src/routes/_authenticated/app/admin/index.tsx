@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { CalendarDays, ShieldCheck, Swords, Trophy } from "lucide-react";
+import { CalendarDays, Megaphone, ShieldCheck, Swords, Trophy } from "lucide-react";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SectionCard } from "@/components/ui/section-card";
@@ -23,12 +23,12 @@ function AdminPage() {
   return (
     <AppLayout title="Administração" subtitle="Configurações e gestão do clube.">
       <SectionCard title="Área administrativa" icon={ShieldCheck}>
-        <div className="grid gap-3 sm:grid-cols-2"><AdminLink to="/app/admin/temporadas" icon={Trophy} label="Gerenciar temporadas" /><AdminLink to="/app/admin/rodadas" icon={CalendarDays} label="Gerenciar rodadas" /><AdminLink to="/app/partidas" icon={Swords} label="Gerenciar partidas" /></div>
+        <div className="grid gap-3 sm:grid-cols-2"><AdminLink to="/app/admin/temporadas" icon={Trophy} label="Gerenciar temporadas" /><AdminLink to="/app/admin/rodadas" icon={CalendarDays} label="Gerenciar rodadas" /><AdminLink to="/app/partidas" icon={Swords} label="Gerenciar partidas" /><AdminLink to="/app/admin/avisos" icon={Megaphone} label="Gerenciar avisos" /></div>
       </SectionCard>
     </AppLayout>
   );
 }
 
-function AdminLink({ to, icon: Icon, label }: { to: "/app/admin/temporadas" | "/app/admin/rodadas" | "/app/partidas"; icon: typeof Trophy; label: string }) {
+function AdminLink({ to, icon: Icon, label }: { to: "/app/admin/temporadas" | "/app/admin/rodadas" | "/app/partidas" | "/app/admin/avisos"; icon: typeof Trophy; label: string }) {
   return <Link to={to} className="card-surface flex items-center gap-3 p-4 font-semibold text-navy transition-transform hover:-translate-y-0.5"><span className="flex size-10 items-center justify-center rounded-xl bg-accent"><Icon className="size-5" /></span>{label}</Link>;
 }
