@@ -304,7 +304,7 @@ function PlayersPage() {
           if (!open) setPreviewPlayer(null);
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[85dvh] w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Preview do jogador</DialogTitle>
             <DialogDescription>Informações do jogador selecionado.</DialogDescription>
@@ -322,7 +322,7 @@ function PlayersPage() {
         </DialogContent>
       </Dialog>
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[85dvh] w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingPlayer ? "Editar jogador" : "Novo jogador"}</DialogTitle>
             <DialogDescription>Preencha os dados do jogador do Resenha FC.</DialogDescription>
