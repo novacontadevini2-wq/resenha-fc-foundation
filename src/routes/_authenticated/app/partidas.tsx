@@ -231,13 +231,24 @@ function MatchesPage() {
                   <SelectValue placeholder="Selecione o sorteio" />
                 </SelectTrigger>
                 <SelectContent>
-                  {selectedDraws.map((draw) => (
-                    <SelectItem key={draw.id} value={draw.id}>
-                      Sorteio {draw.id.slice(0, 8)}
-                    </SelectItem>
-                  ))}
+                  {selectedDraws.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      Nenhum sorteio confirmado para esta rodada.
+                    </div>
+                  ) : (
+                    selectedDraws.map((draw) => (
+                      <SelectItem key={draw.id} value={draw.id}>
+                        Sorteio {draw.id.slice(0, 8)}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              {roundId && selectedDraws.length === 0 ? (
+                <span className="text-meta">
+                  Realize e confirme o sorteio na aba Sorteio para liberar as equipes.
+                </span>
+              ) : null}
             </label>
             <label className="grid gap-1 text-sm font-medium text-navy">
               Equipe A
