@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { Flag, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -19,9 +19,10 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import type { Draw, Match, MatchStatus, MatchTeam, Round } from "@/types";
+import type { Draw, Match, MatchGoal, MatchStatus, MatchTeam, Round } from "@/types";
 
 type DrawSummary = Pick<Draw, "id" | "round_id" | "status">;
+type TeamPlayer = { team_id: string; player_id: string; player_name_snapshot: string };
 
 export const Route = createFileRoute("/_authenticated/app/partidas")({
   head: () => ({ meta: [{ title: "Partidas | Resenha FC" }] }),
@@ -53,6 +54,11 @@ function MatchesPage() {
   const [openedMatch, setOpenedMatch] = useState<MatchCardData | null>(null);
   const [openedScoreA, setOpenedScoreA] = useState("");
   const [openedScoreB, setOpenedScoreB] = useState("");
+  const [openedPlayers, setOpenedPlayers] = useState<TeamPlayer[]>([]);
+  const [openedGoals, setOpenedGoals] = useState<MatchGoal[]>([]);
+  const [openedGoalTeam, setOpenedGoalTeam] = useState("");
+  const [openedGoalPlayer, setOpenedGoalPlayer] = useState("");
+  const [openedGoalMinute, setOpenedGoalMinute] = useState("");
 
   async function loadMatches() {
     setLoading(true);
@@ -144,10 +150,22 @@ function MatchesPage() {
     [dateFilter, matches, roundFilter, statusFilter],
   );
 
-  function openMatch(match: MatchCardData) {
+  async function openMatch(match: MatchCardData) {
     setOpenedMatch(match);
     setOpenedScoreA(String(match.score_a));
     setOpenedScoreB(String(match.score_b));
+    setOpenedGoalTeam(match.team_a_id);
+    setOpenedGoalPlayer("");
+    const [{ data: goals, error: goalsError }, { data: players, error: playersError }] = await Promise.all([
+      supabase.from("match_goals").select("*").eq("match_id", match.id).order("created_at"),
+      supabase.from("draw_team_players").select("team_id, player_id, player_name_snapshot").eq("draw_id", match.draw_id).in("team_id", [match.team_a_id, match.team_b_id]),
+    ]);
+    if (goalsError || playersError) {
+      toast.error((goalsError ?? playersError)?.message ?? "Não foi possível carregar os dados da partida.");
+      return;
+    }
+    setOpenedGoals((goals ?? []) as MatchGoal[]);
+    setOpenedPlayers((players ?? []) as TeamPlayer[]);
   }
 
   async function saveOpenedScore(event: React.FormEvent) {
@@ -158,6 +176,53 @@ function MatchesPage() {
     if (!Number.isInteger(scoreA) || !Number.isInteger(scoreB) || scoreA < 0 || scoreB < 0) {
       toast.error("Informe placares inteiros maiores ou iguais a zero.");
       return;
+    }
+
+    async function saveOpenedGoal(event: React.FormEvent) {
+      event.preventDefault();
+      if (!openedMatch || !openedGoalTeam || !openedGoalPlayer) {
+        toast.error("Selecione a equipe e o jogador que marcou.");
+        return;
+      }
+      const minute = openedGoalMinute ? Number(openedGoalMinute) : null;
+      if (minute !== null && (!Number.isInteger(minute) || minute < 0)) {
+        toast.error("Informe um minuto válido.");
+        return;
+      }
+      setSaving(true);
+      const { data: goalId, error: goalError } = await supabase.rpc("register_match_goal_with_assist", {
+        p_match_id: openedMatch.id,
+        p_player_id: openedGoalPlayer,
+        p_team_id: openedGoalTeam,
+        ...(minute === null ? {} : { p_minute: minute }),
+      });
+      setSaving(false);
+      if (goalError) {
+        toast.error(goalError.message);
+        return;
+      }
+      const player = openedPlayers.find((item) => item.player_id === openedGoalPlayer);
+      setOpenedGoals((current) => [...current, { id: goalId, match_id: openedMatch.id, player_id: openedGoalPlayer, team_id: openedGoalTeam, minute, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }]);
+      setOpenedScoreA(String(Number(openedScoreA) + (openedGoalTeam === openedMatch.team_a_id ? 1 : 0)));
+      setOpenedScoreB(String(Number(openedScoreB) + (openedGoalTeam === openedMatch.team_b_id ? 1 : 0)));
+      setOpenedGoalPlayer("");
+      setOpenedGoalMinute("");
+      toast.success(`Gol de ${player?.player_name_snapshot ?? "jogador"} registrado.`);
+    }
+
+    async function changeOpenedStatus(action: "start_match" | "finish_match") {
+      if (!openedMatch) return;
+      setSaving(true);
+      const { error: statusError } = await supabase.rpc(action, { p_match_id: openedMatch.id });
+      setSaving(false);
+      if (statusError) {
+        toast.error(statusError.message);
+        return;
+      }
+      const status: MatchStatus = action === "start_match" ? "in_progress" : "finished";
+      setOpenedMatch((current) => current ? { ...current, status } : current);
+      setMatches((current) => current.map((match) => match.id === openedMatch.id ? { ...match, status } : match));
+      toast.success(action === "start_match" ? "Partida em andamento." : "Partida finalizada.");
     }
     setSaving(true);
     const { error: scoreError } = await supabase.rpc("set_match_score", {
@@ -413,12 +478,12 @@ function MatchesPage() {
         </div>
       )}
       <Dialog open={Boolean(openedMatch)} onOpenChange={(open) => { if (!open) setOpenedMatch(null); }}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes da partida</DialogTitle>
             <DialogDescription>{openedMatch?.roundLabel} · {openedMatch?.teamALabel} x {openedMatch?.teamBLabel}</DialogDescription>
           </DialogHeader>
-          {openedMatch ? <div className="grid gap-3 text-sm"><p><strong>Data e horário:</strong> {openedMatch.scheduled_at ? new Date(openedMatch.scheduled_at).toLocaleString("pt-BR") : "Não informado"}</p><p><strong>Status:</strong> {openedMatch.status}</p>{isAdmin && openedMatch.status !== "cancelled" ? <form onSubmit={saveOpenedScore} className="grid gap-2"><strong>Editar placar</strong><div className="grid grid-cols-2 gap-2"><label>Equipe A<Input type="number" min="0" step="1" value={openedScoreA} onChange={(event) => setOpenedScoreA(event.target.value)} /></label><label>Equipe B<Input type="number" min="0" step="1" value={openedScoreB} onChange={(event) => setOpenedScoreB(event.target.value)} /></label></div><Button type="submit" disabled={saving}>Salvar placar</Button></form> : <p><strong>Placar:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p>}<p><strong>Placar atual:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p></div> : null}
+          {openedMatch ? <div className="grid gap-4 text-sm"><p><strong>Data e horário:</strong> {openedMatch.scheduled_at ? new Date(openedMatch.scheduled_at).toLocaleString("pt-BR") : "Não informado"}</p><p><strong>Status:</strong> {openedMatch.status}</p>{isAdmin && openedMatch.status !== "cancelled" ? <><form onSubmit={saveOpenedScore} className="grid gap-2"><strong>Editar placar</strong><div className="grid grid-cols-2 gap-2"><label>Equipe A<Input type="number" min="0" step="1" value={openedScoreA} onChange={(event) => setOpenedScoreA(event.target.value)} /></label><label>Equipe B<Input type="number" min="0" step="1" value={openedScoreB} onChange={(event) => setOpenedScoreB(event.target.value)} /></label></div><Button type="submit" disabled={saving}>Salvar placar</Button></form><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => void changeOpenedStatus("start_match")} disabled={saving || openedMatch.status !== "scheduled"}><Flag /> Em andamento</Button><Button type="button" onClick={() => void changeOpenedStatus("finish_match")} disabled={saving || openedMatch.status !== "in_progress"}><Flag /> Finalizar partida</Button></div><form onSubmit={saveOpenedGoal} className="grid gap-2 border-t pt-3"><strong>Adicionar gol</strong><Select value={openedGoalTeam} onValueChange={(value) => { setOpenedGoalTeam(value); setOpenedGoalPlayer(""); }}><SelectTrigger><SelectValue placeholder="Equipe que marcou" /></SelectTrigger><SelectContent><SelectItem value={openedMatch.team_a_id}>{openedMatch.teamALabel}</SelectItem><SelectItem value={openedMatch.team_b_id}>{openedMatch.teamBLabel}</SelectItem></SelectContent></Select><Select value={openedGoalPlayer} onValueChange={setOpenedGoalPlayer}><SelectTrigger><SelectValue placeholder="Jogador que marcou" /></SelectTrigger><SelectContent>{openedPlayers.filter((player) => player.team_id === openedGoalTeam).map((player) => <SelectItem key={player.player_id} value={player.player_id}>{player.player_name_snapshot}</SelectItem>)}</SelectContent></Select><Input type="number" min="0" step="1" placeholder="Minuto (opcional)" value={openedGoalMinute} onChange={(event) => setOpenedGoalMinute(event.target.value)} /><Button type="submit" disabled={saving}>Registrar gol</Button></form><div className="grid gap-1 border-t pt-3"><strong>Gols registrados</strong>{openedGoals.length ? openedGoals.map((goal) => <p key={goal.id}>{goal.minute !== null ? `${goal.minute}' ` : ""}{openedPlayers.find((player) => player.player_id === goal.player_id)?.player_name_snapshot ?? "Jogador"} · {goal.team_id === openedMatch.team_a_id ? openedMatch.teamALabel : openedMatch.teamBLabel}</p>) : <span className="text-muted-foreground">Nenhum gol registrado.</span>}</div></> : <p><strong>Placar:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p>}</div> : null}
         </DialogContent>
       </Dialog>
     </AppLayout>
