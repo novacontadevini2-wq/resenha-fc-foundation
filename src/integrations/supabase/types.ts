@@ -1033,6 +1033,16 @@ export type Database = {
         Args: { p_key: string; p_value: Json }
         Returns: undefined
       }
+      update_match_details: {
+        Args: {
+          p_match_id: string
+          p_notes?: string
+          p_scheduled_at?: string
+          p_team_a_id: string
+          p_team_b_id: string
+        }
+        Returns: undefined
+      }
       update_match_goal: {
         Args: {
           p_goal_id: string
@@ -1049,16 +1059,6 @@ export type Database = {
           p_minute?: number
           p_player_id: string
           p_team_id: string
-        }
-        Returns: undefined
-      }
-      update_match_details: {
-        Args: {
-          p_match_id: string
-          p_notes: string | null
-          p_scheduled_at: string | null
-          p_team_a_id: string
-          p_team_b_id: string
         }
         Returns: undefined
       }
