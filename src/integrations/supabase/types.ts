@@ -920,18 +920,6 @@ export type Database = {
         }
         Returns: string
       }
-      create_player: {
-        Args: {
-          p_name: string
-          p_nickname: string | null
-          p_overall_rating: number
-          p_photo_url: string | null
-          p_position_id: string
-          p_shirt_number: number | null
-          p_status: string
-        }
-        Returns: string
-      }
       create_notification: {
         Args: {
           p_event_key: string
