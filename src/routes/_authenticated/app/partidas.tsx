@@ -9,6 +9,7 @@ import { MatchCard, type MatchCardData } from "@/components/matches/MatchCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionCard } from "@/components/ui/section-card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -49,6 +50,7 @@ function MatchesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [openedMatch, setOpenedMatch] = useState<MatchCardData | null>(null);
 
   async function loadMatches() {
     setLoading(true);
@@ -367,10 +369,19 @@ function MatchesPage() {
       ) : (
         <div className="grid gap-3">
           {visibleMatches.map((match) => (
-            <MatchCard key={match.id} match={match} admin={isAdmin} />
+            <MatchCard key={match.id} match={match} admin={isAdmin} onOpen={() => setOpenedMatch(match)} />
           ))}
         </div>
       )}
+      <Dialog open={Boolean(openedMatch)} onOpenChange={(open) => { if (!open) setOpenedMatch(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Detalhes da partida</DialogTitle>
+            <DialogDescription>{openedMatch?.roundLabel} · {openedMatch?.teamALabel} x {openedMatch?.teamBLabel}</DialogDescription>
+          </DialogHeader>
+          {openedMatch ? <div className="grid gap-3 text-sm"><p><strong>Data e horário:</strong> {openedMatch.scheduled_at ? new Date(openedMatch.scheduled_at).toLocaleString("pt-BR") : "Não informado"}</p><p><strong>Status:</strong> {openedMatch.status}</p><p><strong>Placar:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p><Button asChild><Link to="/app/partidas/$id" params={{ id: openedMatch.id }}>Abrir detalhes completos</Link></Button></div> : null}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
