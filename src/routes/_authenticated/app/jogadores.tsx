@@ -112,15 +112,25 @@ function PlayersPage() {
     };
     const result = editingPlayer
       ? await supabase.from("players").update(payload).eq("id", editingPlayer.id)
-      : await supabase.from("players").insert(payload).select("id").single();
+      : await supabase.rpc("create_player", {
+          p_name: payload.name,
+          p_nickname: payload.nickname,
+          p_shirt_number: payload.shirt_number,
+          p_overall_rating: payload.overall_rating,
+          p_photo_url: payload.photo_url,
+          p_position_id: values.positionId,
+          p_status: payload.status,
+        });
     if (result.error) throw result.error;
-    const playerId = editingPlayer?.id ?? result.data?.id;
+    const playerId = editingPlayer?.id ?? result.data;
     if (!playerId) throw new Error("Jogador não foi criado.");
-    if (editingPlayer) await supabase.from("player_positions").delete().eq("player_id", playerId);
-    const { error: positionError } = await supabase
-      .from("player_positions")
-      .insert({ player_id: playerId, position_id: values.positionId, is_primary: true });
-    if (positionError) throw positionError;
+    if (editingPlayer) {
+      await supabase.from("player_positions").delete().eq("player_id", playerId);
+      const { error: positionError } = await supabase
+        .from("player_positions")
+        .insert({ player_id: playerId, position_id: values.positionId, is_primary: true });
+      if (positionError) throw positionError;
+    }
     setFormOpen(false);
     setEditingPlayer(null);
     toast.success(
