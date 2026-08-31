@@ -944,8 +944,8 @@ export type Database = {
         }
         Returns: string
       }
-      delete_match_goal: { Args: { p_goal_id: string }; Returns: undefined }
       delete_match: { Args: { p_match_id: string }; Returns: undefined }
+      delete_match_goal: { Args: { p_goal_id: string }; Returns: undefined }
       ensure_presence_reminder: {
         Args: { p_round_id: string }
         Returns: string
