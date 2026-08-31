@@ -144,48 +144,48 @@ function MatchesPage() {
     [dateFilter, matches, roundFilter, statusFilter],
   );
 
+  function openMatch(match: MatchCardData) {
+    setOpenedMatch(match);
+    setOpenedScoreA(String(match.score_a));
+    setOpenedScoreB(String(match.score_b));
+  }
+
+  async function saveOpenedScore(event: React.FormEvent) {
+    event.preventDefault();
+    if (!openedMatch) return;
+    const scoreA = Number(openedScoreA);
+    const scoreB = Number(openedScoreB);
+    if (!Number.isInteger(scoreA) || !Number.isInteger(scoreB) || scoreA < 0 || scoreB < 0) {
+      toast.error("Informe placares inteiros maiores ou iguais a zero.");
+      return;
+    }
+    setSaving(true);
+    const { error: scoreError } = await supabase.rpc("set_match_score", {
+      p_match_id: openedMatch.id,
+      p_score_a: scoreA,
+      p_score_b: scoreB,
+    });
+    setSaving(false);
+    if (scoreError) {
+      toast.error(scoreError.message);
+      return;
+    }
+    setMatches((current) =>
+      current.map((match) =>
+        match.id === openedMatch.id ? { ...match, score_a: scoreA, score_b: scoreB } : match,
+      ),
+    );
+    setOpenedMatch((current) =>
+      current ? { ...current, score_a: scoreA, score_b: scoreB } : current,
+    );
+    toast.success("Placar atualizado.");
+  }
+
   async function createMatch(event: React.FormEvent) {
     event.preventDefault();
     if (!roundId || !drawId || !teamAId || !teamBId || teamAId === teamBId) {
       toast.error("Selecione rodada, sorteio e duas equipes diferentes.");
       return;
-    }
-
-    function openMatch(match: MatchCardData) {
-      setOpenedMatch(match);
-      setOpenedScoreA(String(match.score_a));
-      setOpenedScoreB(String(match.score_b));
-    }
-
-    async function saveOpenedScore(event: React.FormEvent) {
-      event.preventDefault();
-      if (!openedMatch) return;
-      const scoreA = Number(openedScoreA);
-      const scoreB = Number(openedScoreB);
-      if (!Number.isInteger(scoreA) || !Number.isInteger(scoreB) || scoreA < 0 || scoreB < 0) {
-        toast.error("Informe placares inteiros maiores ou iguais a zero.");
-        return;
-      }
-      setSaving(true);
-      const { error: scoreError } = await supabase.rpc("set_match_score", {
-        p_match_id: openedMatch.id,
-        p_score_a: scoreA,
-        p_score_b: scoreB,
-      });
-      setSaving(false);
-      if (scoreError) {
-        toast.error(scoreError.message);
-        return;
-      }
-      setMatches((current) =>
-        current.map((match) =>
-          match.id === openedMatch.id ? { ...match, score_a: scoreA, score_b: scoreB } : match,
-        ),
-      );
-      setOpenedMatch((current) =>
-        current ? { ...current, score_a: scoreA, score_b: scoreB } : current,
-      );
-      toast.success("Placar atualizado.");
     }
     setSaving(true);
     const { data: matchId, error: createError } = await supabase.rpc("create_match", {
