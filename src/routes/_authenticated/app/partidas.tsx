@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -51,6 +51,8 @@ function MatchesPage() {
   const [error, setError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [openedMatch, setOpenedMatch] = useState<MatchCardData | null>(null);
+  const [openedScoreA, setOpenedScoreA] = useState("");
+  const [openedScoreB, setOpenedScoreB] = useState("");
 
   async function loadMatches() {
     setLoading(true);
@@ -147,6 +149,43 @@ function MatchesPage() {
     if (!roundId || !drawId || !teamAId || !teamBId || teamAId === teamBId) {
       toast.error("Selecione rodada, sorteio e duas equipes diferentes.");
       return;
+    }
+
+    function openMatch(match: MatchCardData) {
+      setOpenedMatch(match);
+      setOpenedScoreA(String(match.score_a));
+      setOpenedScoreB(String(match.score_b));
+    }
+
+    async function saveOpenedScore(event: React.FormEvent) {
+      event.preventDefault();
+      if (!openedMatch) return;
+      const scoreA = Number(openedScoreA);
+      const scoreB = Number(openedScoreB);
+      if (!Number.isInteger(scoreA) || !Number.isInteger(scoreB) || scoreA < 0 || scoreB < 0) {
+        toast.error("Informe placares inteiros maiores ou iguais a zero.");
+        return;
+      }
+      setSaving(true);
+      const { error: scoreError } = await supabase.rpc("set_match_score", {
+        p_match_id: openedMatch.id,
+        p_score_a: scoreA,
+        p_score_b: scoreB,
+      });
+      setSaving(false);
+      if (scoreError) {
+        toast.error(scoreError.message);
+        return;
+      }
+      setMatches((current) =>
+        current.map((match) =>
+          match.id === openedMatch.id ? { ...match, score_a: scoreA, score_b: scoreB } : match,
+        ),
+      );
+      setOpenedMatch((current) =>
+        current ? { ...current, score_a: scoreA, score_b: scoreB } : current,
+      );
+      toast.success("Placar atualizado.");
     }
     setSaving(true);
     const { data: matchId, error: createError } = await supabase.rpc("create_match", {
@@ -369,7 +408,7 @@ function MatchesPage() {
       ) : (
         <div className="grid gap-3">
           {visibleMatches.map((match) => (
-            <MatchCard key={match.id} match={match} admin={isAdmin} onOpen={() => setOpenedMatch(match)} />
+            <MatchCard key={match.id} match={match} admin={isAdmin} onOpen={() => openMatch(match)} />
           ))}
         </div>
       )}
@@ -379,7 +418,7 @@ function MatchesPage() {
             <DialogTitle>Detalhes da partida</DialogTitle>
             <DialogDescription>{openedMatch?.roundLabel} · {openedMatch?.teamALabel} x {openedMatch?.teamBLabel}</DialogDescription>
           </DialogHeader>
-          {openedMatch ? <div className="grid gap-3 text-sm"><p><strong>Data e horário:</strong> {openedMatch.scheduled_at ? new Date(openedMatch.scheduled_at).toLocaleString("pt-BR") : "Não informado"}</p><p><strong>Status:</strong> {openedMatch.status}</p><p><strong>Placar:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p><Button type="button" onClick={() => { window.location.assign(`/app/partidas/${openedMatch.id}`); }}>Abrir detalhes completos</Button></div> : null}
+          {openedMatch ? <div className="grid gap-3 text-sm"><p><strong>Data e horário:</strong> {openedMatch.scheduled_at ? new Date(openedMatch.scheduled_at).toLocaleString("pt-BR") : "Não informado"}</p><p><strong>Status:</strong> {openedMatch.status}</p>{isAdmin && openedMatch.status !== "cancelled" ? <form onSubmit={saveOpenedScore} className="grid gap-2"><strong>Editar placar</strong><div className="grid grid-cols-2 gap-2"><label>Equipe A<Input type="number" min="0" step="1" value={openedScoreA} onChange={(event) => setOpenedScoreA(event.target.value)} /></label><label>Equipe B<Input type="number" min="0" step="1" value={openedScoreB} onChange={(event) => setOpenedScoreB(event.target.value)} /></label></div><Button type="submit" disabled={saving}>Salvar placar</Button></form> : <p><strong>Placar:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p>}<p><strong>Placar atual:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p></div> : null}
         </DialogContent>
       </Dialog>
     </AppLayout>
