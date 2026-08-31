@@ -932,6 +932,18 @@ export type Database = {
         }
         Returns: string
       }
+      create_player: {
+        Args: {
+          p_name: string
+          p_nickname?: string
+          p_overall_rating: number
+          p_photo_url?: string
+          p_position_id: string
+          p_shirt_number?: number
+          p_status?: string
+        }
+        Returns: string
+      }
       delete_match_goal: { Args: { p_goal_id: string }; Returns: undefined }
       ensure_presence_reminder: {
         Args: { p_round_id: string }
