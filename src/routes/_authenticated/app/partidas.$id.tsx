@@ -96,7 +96,7 @@ function MatchDetailsPage() {
     if (!selectedPlayer || !playerTeamId || (minute && (!Number.isInteger(Number(minute)) || Number(minute) < 0))) { toast.error("Selecione um jogador e informe um minuto válido."); return; }
     setWorking(true);
     const assistPlayerId = selectedAssist && selectedAssist !== "none" ? selectedAssist : null;
-    const action = editingGoal ? supabase.rpc("update_match_goal_with_assist", { p_goal_id: editingGoal.id, p_player_id: selectedPlayer, p_team_id: playerTeamId, p_minute: minute ? Number(minute) : undefined, p_assist_player_id: assistPlayerId ?? undefined }) : supabase.rpc("register_match_goal_with_assist", { p_match_id: id, p_player_id: selectedPlayer, p_team_id: playerTeamId, p_minute: minute ? Number(minute) : undefined, p_assist_player_id: assistPlayerId ?? undefined });
+    const action = editingGoal ? supabase.rpc("update_match_goal_with_assist", { p_goal_id: editingGoal.id, p_player_id: selectedPlayer, p_team_id: playerTeamId, ...(minute ? { p_minute: Number(minute) } : {}), ...(assistPlayerId ? { p_assist_player_id: assistPlayerId } : {}) }) : supabase.rpc("register_match_goal_with_assist", { p_match_id: id, p_player_id: selectedPlayer, p_team_id: playerTeamId, ...(minute ? { p_minute: Number(minute) } : {}), ...(assistPlayerId ? { p_assist_player_id: assistPlayerId } : {}) });
     const { error: goalError } = await action; setWorking(false);
     if (goalError) toast.error("Não foi possível salvar o gol. Confirme o jogador e a equipe."); else { toast.success(editingGoal ? "Gol atualizado com sucesso." : "Gol registrado."); resetGoalForm(); await load(); }
   }
@@ -112,7 +112,7 @@ function MatchDetailsPage() {
     const conceded = Number(goalsConceded);
     const keeper = teamPlayers.find((player) => player.player_id === keeperPlayer);
     if (!keeper || !Number.isInteger(conceded) || conceded < 0 || (saves && (!Number.isInteger(Number(saves)) || Number(saves) < 0))) { toast.error("Informe um goleiro e valores válidos."); return; }
-    setWorking(true); const { error: keeperError } = await supabase.rpc("upsert_goalkeeper_stats", { p_match_id: id, p_player_id: keeper.player_id, p_team_id: keeper.team_id, p_goals_conceded: conceded, p_saves: saves ? Number(saves) : undefined }); setWorking(false);
+    setWorking(true); const { error: keeperError } = await supabase.rpc("upsert_goalkeeper_stats", { p_match_id: id, p_player_id: keeper.player_id, p_team_id: keeper.team_id, p_goals_conceded: conceded, ...(saves ? { p_saves: Number(saves) } : {}) }); setWorking(false);
     if (keeperError) toast.error("Não foi possível salvar o desempenho do goleiro."); else { toast.success("Desempenho do goleiro salvo."); setKeeperPlayer(""); setGoalsConceded(""); setSaves(""); await load(); }
   }
 
