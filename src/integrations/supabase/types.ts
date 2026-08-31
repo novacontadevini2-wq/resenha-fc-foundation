@@ -1052,6 +1052,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_match_details: {
+        Args: {
+          p_match_id: string
+          p_notes: string | null
+          p_scheduled_at: string | null
+          p_team_a_id: string
+          p_team_b_id: string
+        }
+        Returns: undefined
+      }
       upsert_goalkeeper_stats: {
         Args: {
           p_goals_conceded: number
