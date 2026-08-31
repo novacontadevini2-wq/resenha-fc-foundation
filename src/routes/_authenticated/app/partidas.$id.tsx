@@ -39,7 +39,7 @@ function MatchDetailsPage() {
   const [scoreA, setScoreA] = useState("0");
   const [scoreB, setScoreB] = useState("0");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const [keeperPlayer, setKeeperPlayer] = useState("");
   const [keeperTeam, setKeeperTeam] = useState("");
@@ -53,7 +53,12 @@ function MatchDetailsPage() {
   async function load() {
     setLoading(true);
     const { data: matchData, error: matchError } = await supabase.from("matches").select("*").eq("id", id).maybeSingle();
-    if (matchError || !matchData) { setError(true); setLoading(false); return; }
+    if (matchError || !matchData) {
+      setError(matchError?.message ?? "Partida não encontrada.");
+      setLoading(false);
+      return;
+    }
+    setError(null);
     const currentMatch = matchData as Match;
     const [{ data: roundData }, { data: teamData }, { data: goalData }, { data: assistData }, { data: keeperData }] = await Promise.all([
       supabase.from("rounds").select("*").eq("id", currentMatch.round_id).maybeSingle(),
@@ -83,7 +88,7 @@ function MatchDetailsPage() {
     setWorking(true);
     const { error: actionError } = await supabase.rpc(action, { p_match_id: match.id });
     setWorking(false);
-    if (actionError) toast.error(action === "finish_match" ? "Existem gols registrados que não correspondem ao placar. Corrija antes de finalizar a partida." : "Não foi possível atualizar a partida.");
+    if (actionError) toast.error(actionError.message);
     else if (action === "delete_match") { toast.success("Partida excluída."); window.location.href = "/app/partidas"; }
     else { toast.success(action === "start_match" ? "Partida iniciada." : action === "finish_match" ? "Partida finalizada." : "Partida cancelada."); await load(); }
   }
@@ -93,7 +98,7 @@ function MatchDetailsPage() {
     const nextA = Number(scoreA); const nextB = Number(scoreB);
     if (!Number.isInteger(nextA) || !Number.isInteger(nextB) || nextA < 0 || nextB < 0) { toast.error("Informe placares inteiros maiores ou iguais a zero."); return; }
     setWorking(true); const { error: scoreError } = await supabase.rpc("set_match_score", { p_match_id: id, p_score_a: nextA, p_score_b: nextB }); setWorking(false);
-    if (scoreError) toast.error("Não foi possível atualizar o placar."); else { toast.success("Placar atualizado."); await load(); }
+    if (scoreError) toast.error(scoreError.message); else { toast.success("Placar atualizado."); await load(); }
   }
 
   async function saveMatchDetails(event: React.FormEvent) {
@@ -111,7 +116,7 @@ function MatchDetailsPage() {
       ...(editNotes ? { p_notes: editNotes } : {}),
     });
     setWorking(false);
-    if (updateError) toast.error("Não foi possível atualizar os dados da partida.");
+    if (updateError) toast.error(updateError.message);
     else { toast.success("Partida atualizada."); await load(); }
   }
 
@@ -123,13 +128,13 @@ function MatchDetailsPage() {
     const assistPlayerId = selectedAssist && selectedAssist !== "none" ? selectedAssist : null;
     const action = editingGoal ? supabase.rpc("update_match_goal_with_assist", { p_goal_id: editingGoal.id, p_player_id: selectedPlayer, p_team_id: playerTeamId, ...(minute ? { p_minute: Number(minute) } : {}), ...(assistPlayerId ? { p_assist_player_id: assistPlayerId } : {}) }) : supabase.rpc("register_match_goal_with_assist", { p_match_id: id, p_player_id: selectedPlayer, p_team_id: playerTeamId, ...(minute ? { p_minute: Number(minute) } : {}), ...(assistPlayerId ? { p_assist_player_id: assistPlayerId } : {}) });
     const { error: goalError } = await action; setWorking(false);
-    if (goalError) toast.error("Não foi possível salvar o gol. Confirme o jogador e a equipe."); else { toast.success(editingGoal ? "Gol atualizado com sucesso." : "Gol registrado."); resetGoalForm(); await load(); }
+    if (goalError) toast.error(goalError.message); else { toast.success(editingGoal ? "Gol atualizado com sucesso." : "Gol registrado."); resetGoalForm(); await load(); }
   }
 
   async function deleteGoal(goal: MatchGoal) {
     if (!window.confirm("Deseja remover este gol?")) return;
     setWorking(true); const { error: deleteError } = await supabase.rpc("delete_match_goal", { p_goal_id: goal.id }); setWorking(false);
-    if (deleteError) toast.error("Não foi possível remover o gol."); else { toast.success("Gol removido."); await load(); }
+    if (deleteError) toast.error(deleteError.message); else { toast.success("Gol removido."); await load(); }
   }
 
   async function saveGoalkeeper(event: React.FormEvent) {
@@ -138,16 +143,16 @@ function MatchDetailsPage() {
     const keeper = teamPlayers.find((player) => player.player_id === keeperPlayer);
     if (!keeper || !Number.isInteger(conceded) || conceded < 0 || (saves && (!Number.isInteger(Number(saves)) || Number(saves) < 0))) { toast.error("Informe um goleiro e valores válidos."); return; }
     setWorking(true); const { error: keeperError } = await supabase.rpc("upsert_goalkeeper_stats", { p_match_id: id, p_player_id: keeper.player_id, p_team_id: keeper.team_id, p_goals_conceded: conceded, ...(saves ? { p_saves: Number(saves) } : {}) }); setWorking(false);
-    if (keeperError) toast.error("Não foi possível salvar o desempenho do goleiro."); else { toast.success("Desempenho do goleiro salvo."); setKeeperPlayer(""); setGoalsConceded(""); setSaves(""); await load(); }
+    if (keeperError) toast.error(keeperError.message); else { toast.success("Desempenho do goleiro salvo."); setKeeperPlayer(""); setGoalsConceded(""); setSaves(""); await load(); }
   }
 
   function editGoal(goal: MatchGoal) { setEditingGoal(goal); setSelectedTeam(goal.team_id); setSelectedPlayer(goal.player_id); setSelectedAssist(assists.find((assist) => assist.goal_id === goal.id)?.player_id ?? ""); setMinute(goal.minute?.toString() ?? ""); }
   function resetGoalForm() { setEditingGoal(null); setSelectedTeam(""); setSelectedPlayer(""); setSelectedAssist(""); setMinute(""); }
 
   if (loading) return <AppLayout title="Partida"><LoadingState label="Carregando partida..." /></AppLayout>;
-  if (error || !match) return <AppLayout title="Partida"><ErrorState title="Não foi possível carregar a partida." /></AppLayout>;
+  if (error || !match) return <AppLayout title="Partida"><ErrorState title={error ?? "Não foi possível carregar a partida."} onRetry={() => void load()} /></AppLayout>;
   const canEdit = isAdmin && match.status !== "cancelled";
-  const canEditGoals = isAdmin && match.status === "in_progress";
+  const canEditGoals = isAdmin && match.status !== "cancelled";
   return <AppLayout title="Detalhe da partida" subtitle={round ? `Rodada de ${new Date(`${round.scheduled_date}T12:00:00`).toLocaleDateString("pt-BR")}` : "Resenha FC"}>
     <Button variant="ghost" asChild className="mb-4"><Link to="/app/partidas"><ArrowLeft /> Voltar para partidas</Link></Button>
     {isAdmin && match.status !== "finished" && match.status !== "cancelled" ? <SectionCard title="Editar partida" icon={Flag} className="mb-5"><form onSubmit={saveMatchDetails} className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium text-navy">Equipe A<Select value={editTeamA} onValueChange={setEditTeamA}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{teams.map((team) => <SelectItem key={team.id} value={team.id}>{teamName(team.id)}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Equipe B<Select value={editTeamB} onValueChange={setEditTeamB}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{teams.filter((team) => team.id !== editTeamA).map((team) => <SelectItem key={team.id} value={team.id}>{teamName(team.id)}</SelectItem>)}</SelectContent></Select></label><label className="grid gap-1 text-sm font-medium text-navy">Data e horário<Input type="datetime-local" value={editScheduledAt} onChange={(event) => setEditScheduledAt(event.target.value)} /></label><label className="grid gap-1 text-sm font-medium text-navy">Observações<Input value={editNotes} onChange={(event) => setEditNotes(event.target.value)} /></label><Button disabled={working}>Salvar alterações</Button></form></SectionCard> : null}
