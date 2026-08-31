@@ -198,6 +198,7 @@ function AdminDashboard() {
         <SectionCard title="Ações rápidas" icon={ClipboardList}>
           <div className="grid gap-2 sm:grid-cols-2">
             <QuickLink to="/app/admin/rodadas" icon={CalendarDays} label="Nova rodada" />
+            <QuickLink to="/app/admin/temporadas" icon={CalendarDays} label="Criar temporada" />
             <QuickLink to="/app/jogadores" icon={Users} label="Novo jogador" />
             <QuickLink to="/app/torneios" icon={Trophy} label="Novo torneio" />
             <QuickLink to="/app/sorteio" icon={BarChart3} label="Realizar sorteio" />
@@ -243,6 +244,7 @@ function QuickLink({
 }: {
   to:
     | "/app/admin/rodadas"
+    | "/app/admin/temporadas"
     | "/app/jogadores"
     | "/app/torneios"
     | "/app/sorteio"
