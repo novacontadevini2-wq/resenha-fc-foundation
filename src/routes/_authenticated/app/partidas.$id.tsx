@@ -105,8 +105,8 @@ function MatchDetailsPage() {
       p_match_id: match.id,
       p_team_a_id: editTeamA,
       p_team_b_id: editTeamB,
-      p_scheduled_at: editScheduledAt ? new Date(editScheduledAt).toISOString() : null,
-      p_notes: editNotes || null,
+      ...(editScheduledAt ? { p_scheduled_at: new Date(editScheduledAt).toISOString() } : {}),
+      ...(editNotes ? { p_notes: editNotes } : {}),
     });
     setWorking(false);
     if (updateError) toast.error("Não foi possível atualizar os dados da partida.");
