@@ -114,12 +114,12 @@ function PlayersPage() {
       ? await supabase.from("players").update(payload).eq("id", editingPlayer.id)
       : await supabase.rpc("create_player", {
           p_name: payload.name,
-          p_nickname: payload.nickname,
-          p_shirt_number: payload.shirt_number,
           p_overall_rating: payload.overall_rating,
-          p_photo_url: payload.photo_url,
           p_position_id: values.positionId,
           p_status: payload.status,
+          ...(payload.nickname != null ? { p_nickname: payload.nickname } : {}),
+          ...(payload.shirt_number != null ? { p_shirt_number: payload.shirt_number } : {}),
+          ...(payload.photo_url != null ? { p_photo_url: payload.photo_url } : {}),
         });
     if (result.error) throw result.error;
     const playerId = editingPlayer?.id ?? result.data;

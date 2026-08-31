@@ -141,8 +141,8 @@ function MatchesPage() {
       p_draw_id: drawId,
       p_team_a_id: teamAId,
       p_team_b_id: teamBId,
-      p_scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
-      p_notes: notes || null,
+      ...(scheduledAt ? { p_scheduled_at: new Date(scheduledAt).toISOString() } : {}),
+      ...(notes ? { p_notes: notes } : {}),
     });
     setSaving(false);
     if (createError || !matchId)
