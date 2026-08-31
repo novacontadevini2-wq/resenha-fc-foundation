@@ -379,7 +379,7 @@ function MatchesPage() {
             <DialogTitle>Detalhes da partida</DialogTitle>
             <DialogDescription>{openedMatch?.roundLabel} · {openedMatch?.teamALabel} x {openedMatch?.teamBLabel}</DialogDescription>
           </DialogHeader>
-          {openedMatch ? <div className="grid gap-3 text-sm"><p><strong>Data e horário:</strong> {openedMatch.scheduled_at ? new Date(openedMatch.scheduled_at).toLocaleString("pt-BR") : "Não informado"}</p><p><strong>Status:</strong> {openedMatch.status}</p><p><strong>Placar:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p><Button asChild><Link to="/app/partidas/$id" params={{ id: openedMatch.id }}>Abrir detalhes completos</Link></Button></div> : null}
+          {openedMatch ? <div className="grid gap-3 text-sm"><p><strong>Data e horário:</strong> {openedMatch.scheduled_at ? new Date(openedMatch.scheduled_at).toLocaleString("pt-BR") : "Não informado"}</p><p><strong>Status:</strong> {openedMatch.status}</p><p><strong>Placar:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p><Button type="button" onClick={() => { window.location.assign(`/app/partidas/${openedMatch.id}`); }}>Abrir detalhes completos</Button></div> : null}
         </DialogContent>
       </Dialog>
     </AppLayout>

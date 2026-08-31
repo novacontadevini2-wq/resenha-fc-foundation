@@ -60,15 +60,28 @@ function MatchDetailsPage() {
     }
     setError(null);
     const currentMatch = matchData as Match;
-    const [{ data: roundData }, { data: teamData }, { data: goalData }, { data: assistData }, { data: keeperData }] = await Promise.all([
+    const [{ data: roundData, error: roundError }, { data: teamData, error: teamError }, { data: goalData, error: goalError }, { data: assistData, error: assistError }, { data: keeperData, error: keeperError }] = await Promise.all([
       supabase.from("rounds").select("*").eq("id", currentMatch.round_id).maybeSingle(),
       supabase.from("draw_teams").select("id, draw_id, team_number, total_rating").eq("draw_id", currentMatch.draw_id).order("team_number"),
       supabase.from("match_goals").select("*").eq("match_id", id).order("created_at"),
       supabase.from("match_assists").select("*").eq("match_id", id),
       supabase.from("goalkeeper_stats").select("*").eq("match_id", id),
     ]);
+    const relatedError = roundError ?? teamError ?? goalError ?? assistError ?? keeperError;
+    if (relatedError) {
+      setError(relatedError.message);
+      setLoading(false);
+      return;
+    }
     const nextTeams = (teamData ?? []) as MatchTeam[];
-    const { data: snapshotData } = await supabase.from("draw_team_players").select("team_id, player_id, player_name_snapshot, photo_url_snapshot").in("team_id", nextTeams.map((team) => team.id));
+    const { data: snapshotData, error: snapshotError } = nextTeams.length
+      ? await supabase.from("draw_team_players").select("team_id, player_id, player_name_snapshot, photo_url_snapshot").in("team_id", nextTeams.map((team) => team.id))
+      : { data: [], error: null };
+    if (snapshotError) {
+      setError(snapshotError.message);
+      setLoading(false);
+      return;
+    }
     const snapshotPlayers = (snapshotData ?? []) as TeamPlayer[];
     setMatch(currentMatch); setRound((roundData ?? null) as Round | null); setTeams(nextTeams); setGoals((goalData ?? []) as MatchGoal[]); setAssists((assistData ?? []) as MatchAssist[]); setGoalkeeperStats((keeperData ?? []) as MatchGoalkeeperStat[]); setTeamPlayers(snapshotPlayers); setScoreA(String(currentMatch.score_a)); setScoreB(String(currentMatch.score_b)); setEditTeamA(currentMatch.team_a_id); setEditTeamB(currentMatch.team_b_id); setEditScheduledAt(currentMatch.scheduled_at ? new Date(currentMatch.scheduled_at).toISOString().slice(0, 16) : ""); setEditNotes(currentMatch.notes ?? ""); setLoading(false);
   }
