@@ -80,18 +80,29 @@ function MatchesPage() {
     const teamIds = [
       ...new Set(nextMatches.flatMap((match) => [match.team_a_id, match.team_b_id])),
     ];
-    const { data: teamData } = teamIds.length
-      ? await supabase
+    const drawIds = nextDraws.map((draw) => draw.id);
+    const [{ data: matchTeamData }, { data: drawTeamData }] = await Promise.all([
+      teamIds.length
+      ? supabase
           .from("draw_teams")
           .select("id, draw_id, team_number, total_rating")
           .in("id", teamIds)
-      : { data: [] };
-    const teamMap = new Map(((teamData ?? []) as MatchTeam[]).map((team) => [team.id, team]));
+      : { data: [] },
+      drawIds.length
+        ? supabase
+            .from("draw_teams")
+            .select("id, draw_id, team_number, total_rating")
+            .in("draw_id", drawIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const allTeams = [...((matchTeamData ?? []) as MatchTeam[]), ...((drawTeamData ?? []) as MatchTeam[])];
+    const uniqueTeams = [...new Map(allTeams.map((team) => [team.id, team])).values()];
+    const teamMap = new Map(uniqueTeams.map((team) => [team.id, team]));
     const roundMap = new Map(nextRounds.map((round) => [round.id, round]));
     setRounds(nextRounds);
     setDraws(nextDraws);
     setTournaments(tournamentData ?? []);
-    setTeams((teamData ?? []) as MatchTeam[]);
+    setTeams(uniqueTeams);
     setMatches(
       nextMatches.map((match) => ({
         ...match,
