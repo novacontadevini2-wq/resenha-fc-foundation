@@ -169,4 +169,5 @@ export async function exportDrawTeamsPdf({
   });
 
   doc.save(fileName);
+  return doc;
 }
