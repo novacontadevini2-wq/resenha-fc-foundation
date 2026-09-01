@@ -178,52 +178,6 @@ function MatchesPage() {
       return;
     }
 
-    async function saveOpenedGoal(event: React.FormEvent) {
-      event.preventDefault();
-      if (!openedMatch || !openedGoalTeam || !openedGoalPlayer) {
-        toast.error("Selecione a equipe e o jogador que marcou.");
-        return;
-      }
-      const minute = openedGoalMinute ? Number(openedGoalMinute) : null;
-      if (minute !== null && (!Number.isInteger(minute) || minute < 0)) {
-        toast.error("Informe um minuto válido.");
-        return;
-      }
-      setSaving(true);
-      const { data: goalId, error: goalError } = await supabase.rpc("register_match_goal_with_assist", {
-        p_match_id: openedMatch.id,
-        p_player_id: openedGoalPlayer,
-        p_team_id: openedGoalTeam,
-        ...(minute === null ? {} : { p_minute: minute }),
-      });
-      setSaving(false);
-      if (goalError) {
-        toast.error(goalError.message);
-        return;
-      }
-      const player = openedPlayers.find((item) => item.player_id === openedGoalPlayer);
-      setOpenedGoals((current) => [...current, { id: goalId, match_id: openedMatch.id, player_id: openedGoalPlayer, team_id: openedGoalTeam, minute, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }]);
-      setOpenedScoreA(String(Number(openedScoreA) + (openedGoalTeam === openedMatch.team_a_id ? 1 : 0)));
-      setOpenedScoreB(String(Number(openedScoreB) + (openedGoalTeam === openedMatch.team_b_id ? 1 : 0)));
-      setOpenedGoalPlayer("");
-      setOpenedGoalMinute("");
-      toast.success(`Gol de ${player?.player_name_snapshot ?? "jogador"} registrado.`);
-    }
-
-    async function changeOpenedStatus(action: "start_match" | "finish_match") {
-      if (!openedMatch) return;
-      setSaving(true);
-      const { error: statusError } = await supabase.rpc(action, { p_match_id: openedMatch.id });
-      setSaving(false);
-      if (statusError) {
-        toast.error(statusError.message);
-        return;
-      }
-      const status: MatchStatus = action === "start_match" ? "in_progress" : "finished";
-      setOpenedMatch((current) => current ? { ...current, status } : current);
-      setMatches((current) => current.map((match) => match.id === openedMatch.id ? { ...match, status } : match));
-      toast.success(action === "start_match" ? "Partida em andamento." : "Partida finalizada.");
-    }
     setSaving(true);
     const { error: scoreError } = await supabase.rpc("set_match_score", {
       p_match_id: openedMatch.id,
@@ -244,6 +198,53 @@ function MatchesPage() {
       current ? { ...current, score_a: scoreA, score_b: scoreB } : current,
     );
     toast.success("Placar atualizado.");
+  }
+
+  async function saveOpenedGoal(event: React.FormEvent) {
+    event.preventDefault();
+    if (!openedMatch || !openedGoalTeam || !openedGoalPlayer) {
+      toast.error("Selecione a equipe e o jogador que marcou.");
+      return;
+    }
+    const minute = openedGoalMinute ? Number(openedGoalMinute) : null;
+    if (minute !== null && (!Number.isInteger(minute) || minute < 0)) {
+      toast.error("Informe um minuto válido.");
+      return;
+    }
+    setSaving(true);
+    const { data: goalId, error: goalError } = await supabase.rpc("register_match_goal_with_assist", {
+      p_match_id: openedMatch.id,
+      p_player_id: openedGoalPlayer,
+      p_team_id: openedGoalTeam,
+      ...(minute === null ? {} : { p_minute: minute }),
+    });
+    setSaving(false);
+    if (goalError) {
+      toast.error(goalError.message);
+      return;
+    }
+    const player = openedPlayers.find((item) => item.player_id === openedGoalPlayer);
+    setOpenedGoals((current) => [...current, { id: goalId, match_id: openedMatch.id, player_id: openedGoalPlayer, team_id: openedGoalTeam, minute, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }]);
+    setOpenedScoreA(String(Number(openedScoreA) + (openedGoalTeam === openedMatch.team_a_id ? 1 : 0)));
+    setOpenedScoreB(String(Number(openedScoreB) + (openedGoalTeam === openedMatch.team_b_id ? 1 : 0)));
+    setOpenedGoalPlayer("");
+    setOpenedGoalMinute("");
+    toast.success(`Gol de ${player?.player_name_snapshot ?? "jogador"} registrado.`);
+  }
+
+  async function changeOpenedStatus(action: "start_match" | "finish_match") {
+    if (!openedMatch) return;
+    setSaving(true);
+    const { error: statusError } = await supabase.rpc(action, { p_match_id: openedMatch.id });
+    setSaving(false);
+    if (statusError) {
+      toast.error(statusError.message);
+      return;
+    }
+    const status: MatchStatus = action === "start_match" ? "in_progress" : "finished";
+    setOpenedMatch((current) => current ? { ...current, status } : current);
+    setMatches((current) => current.map((match) => match.id === openedMatch.id ? { ...match, status } : match));
+    toast.success(action === "start_match" ? "Partida em andamento." : "Partida finalizada.");
   }
 
   async function createMatch(event: React.FormEvent) {
