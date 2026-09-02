@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Crown, Shield, Target, Trophy } from "lucide-react";
+import { ArrowLeft, Crown, Link2, Shield, Target, Trophy, Unlink, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -35,11 +35,28 @@ import type {
   Tournament,
 } from "@/types";
 
-type TournamentTeam = { tournament_id: string; team_id: string };
-type RoundLabel = { id: string; scheduled_date: string };
+type TournamentTeam = { id: string; tournament_id: string; team_id: string };
+type RoundLabel = { id: string; scheduled_date: string; season_id: string | null };
+type DrawLabel = { id: string; round_id: string };
+type LabeledTeam = MatchTeam & { label: string };
 
 export const Route = createFileRoute("/_authenticated/app/torneios/$id")({
-  head: () => ({ meta: [{ title: "Detalhe do torneio | Resenha FC" }] }),
+  head: () => ({
+    meta: [
+      { title: "Detalhe do torneio | Resenha FC" },
+      {
+        name: "description",
+        content: "Classificação, destaques e partidas do torneio do Resenha FC.",
+      },
+      { property: "og:title", content: "Detalhe do torneio | Resenha FC" },
+      {
+        property: "og:description",
+        content: "Classificação, destaques e partidas do torneio do Resenha FC.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: TournamentDetailsPage,
 });
 
@@ -53,13 +70,19 @@ function TournamentDetailsPage() {
   const [scorers, setScorers] = useState<ReturnType<typeof calculateScorers>>([]);
   const [assists, setAssists] = useState<ReturnType<typeof calculateAssists>>([]);
   const [goalkeepers, setGoalkeepers] = useState<ReturnType<typeof calculateGoalkeeperRanking>>([]);
-  const [availableTeams, setAvailableTeams] = useState<MatchTeam[]>([]);
+  const [tournamentTeams, setTournamentTeams] = useState<
+    { membershipId: string; team: LabeledTeam }[]
+  >([]);
+  const [availableTeams, setAvailableTeams] = useState<LabeledTeam[]>([]);
+  const [availableMatches, setAvailableMatches] = useState<MatchCardData[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [selectedMatchId, setSelectedMatchId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(false);
     const { data: tournamentData, error: tournamentError } = await supabase
       .from("tournaments")
       .select("*")
@@ -71,25 +94,53 @@ function TournamentDetailsPage() {
       return;
     }
     const current = tournamentData as Tournament;
-    const { data: matchData } = await supabase
-      .from("matches")
-      .select("*")
-      .eq("tournament_id", id)
-      .order("scheduled_at", { ascending: true, nullsFirst: false });
-    const matchIds = ((matchData ?? []) as Match[]).map((match) => match.id);
     const [
       { data: seasonData },
+      { data: allMatchData },
       { data: teamsData },
-      { data: tournamentTeams },
-      { data: goalData },
-      { data: assistData },
-      { data: keeperData },
+      { data: tournamentTeamsData },
       { data: playersData },
       { data: roundsData },
+      { data: drawsData },
     ] = await Promise.all([
       supabase.from("seasons").select("*").eq("id", current.season_id).maybeSingle(),
+      supabase
+        .from("matches")
+        .select("*")
+        .order("scheduled_at", { ascending: true, nullsFirst: false }),
       supabase.from("draw_teams").select("id, draw_id, team_number, total_rating"),
-      supabase.from("tournament_teams").select("tournament_id, team_id").eq("tournament_id", id),
+      supabase.from("tournament_teams").select("id, tournament_id, team_id").eq("tournament_id", id),
+      supabase.from("players").select("id, name, photo_url"),
+      supabase.from("rounds").select("id, scheduled_date, season_id"),
+      supabase.from("draws").select("id, round_id"),
+    ]);
+
+    const roundMap = new Map(((roundsData ?? []) as RoundLabel[]).map((r) => [r.id, r]));
+    const drawMap = new Map(((drawsData ?? []) as DrawLabel[]).map((d) => [d.id, d]));
+    const label = (team?: MatchTeam) => {
+      if (!team) return "Equipe";
+      const round = roundMap.get(drawMap.get(team.draw_id)?.round_id ?? "");
+      return `Time ${team.team_number}${round ? ` · ${formatDate(round.scheduled_date)}` : ""}`;
+    };
+    const labeledTeams = ((teamsData ?? []) as MatchTeam[]).map((team) => ({
+      ...team,
+      label: label(team),
+    }));
+    const teamMap = new Map(labeledTeams.map((team) => [team.id, team]));
+    const teamSeason = (teamId: string) =>
+      roundMap.get(drawMap.get(teamMap.get(teamId)?.draw_id ?? "")?.round_id ?? "")?.season_id ??
+      null;
+
+    const allMatches = (allMatchData ?? []) as Match[];
+    const decorate = (match: Match): MatchCardData => ({
+      ...match,
+      roundLabel: formatDate(roundMap.get(match.round_id)?.scheduled_date),
+      teamALabel: teamMap.get(match.team_a_id)?.label ?? "Equipe",
+      teamBLabel: teamMap.get(match.team_b_id)?.label ?? "Equipe",
+    });
+    const tournamentMatches = allMatches.filter((match) => match.tournament_id === id);
+    const matchIds = tournamentMatches.map((match) => match.id);
+    const [{ data: goalData }, { data: assistData }, { data: keeperData }] = await Promise.all([
       matchIds.length
         ? supabase.from("match_goals").select("*").in("match_id", matchIds)
         : Promise.resolve({ data: [] }),
@@ -99,37 +150,29 @@ function TournamentDetailsPage() {
       matchIds.length
         ? supabase.from("goalkeeper_stats").select("*").in("match_id", matchIds)
         : Promise.resolve({ data: [] }),
-      supabase.from("players").select("id, name, photo_url"),
-      supabase.from("rounds").select("id, scheduled_date"),
     ]);
-    const teamMap = new Map(((teamsData ?? []) as MatchTeam[]).map((team) => [team.id, team]));
-    const roundMap = new Map(
-      ((roundsData ?? []) as RoundLabel[]).map((round) => [round.id, round]),
-    );
+
     const playerList = (playersData ?? []) as Player[];
-    const nextMatches = ((matchData ?? []) as Match[]).map((match) => ({
-      ...match,
-      roundLabel: formatDate(roundMap.get(match.round_id)?.scheduled_date),
-      teamALabel: teamLabel(teamMap.get(match.team_a_id)),
-      teamBLabel: teamLabel(teamMap.get(match.team_b_id)),
-    }));
-    const officialMatches = ((matchData ?? []) as Match[]).filter(
-      (match) => match.status === "finished",
-    );
+    const officialMatches = tournamentMatches.filter((match) => match.status === "finished");
     const officialMatchIds = new Set(officialMatches.map((match) => match.id));
-    const tournamentTeamList = ((tournamentTeams ?? []) as TournamentTeam[])
-      .map((item) => teamMap.get(item.team_id))
-      .filter((team): team is MatchTeam => Boolean(team));
-    const tournamentTeamIds = new Set(tournamentTeamList.map((team) => team.id));
+    const memberships = ((tournamentTeamsData ?? []) as TournamentTeam[])
+      .map((item) => {
+        const team = teamMap.get(item.team_id);
+        return team ? { membershipId: item.id, team } : null;
+      })
+      .filter((item): item is { membershipId: string; team: LabeledTeam } => Boolean(item));
+    const memberTeamIds = new Set(memberships.map((item) => item.team.id));
+
     setTournament(current);
     setSeason((seasonData ?? null) as Season | null);
-    setMatches(nextMatches);
+    setMatches(tournamentMatches.map(decorate));
+    setTournamentTeams(memberships);
     setStandings(
-      calculateStandings(officialMatches, tournamentTeamList, {
-        win: current.points_win,
-        draw: current.points_draw,
-        loss: current.points_loss,
-      }),
+      calculateStandings(
+        officialMatches,
+        memberships.map((item) => item.team),
+        { win: current.points_win, draw: current.points_draw, loss: current.points_loss },
+      ),
     );
     setScorers(
       calculateScorers(
@@ -155,7 +198,19 @@ function TournamentDetailsPage() {
       ),
     );
     setAvailableTeams(
-      ((teamsData ?? []) as MatchTeam[]).filter((team) => !tournamentTeamIds.has(team.id)),
+      labeledTeams.filter(
+        (team) => !memberTeamIds.has(team.id) && teamSeason(team.id) === current.season_id,
+      ),
+    );
+    setAvailableMatches(
+      allMatches
+        .filter(
+          (match) =>
+            !match.tournament_id &&
+            roundMap.get(match.round_id)?.season_id === current.season_id &&
+            (memberTeamIds.has(match.team_a_id) || memberTeamIds.has(match.team_b_id)),
+        )
+        .map(decorate),
     );
     setLoading(false);
   }, [id]);
@@ -163,31 +218,73 @@ function TournamentDetailsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
   async function changeStatus(status: Tournament["status"]) {
     if (!tournament || !window.confirm(`Alterar status do torneio para ${status}?`)) return;
     const { error: updateError } = await supabase.rpc("set_tournament_status", {
       p_tournament_id: tournament.id,
       p_status: status,
     });
-    if (updateError) toast.error("Não foi possível atualizar o torneio.");
+    if (updateError) toast.error(updateError.message);
     else {
       toast.success("Torneio atualizado.");
       await load();
     }
   }
+
   async function addTeam() {
     if (!selectedTeamId) return;
     const { error: addError } = await supabase.rpc("add_tournament_team", {
       p_tournament_id: id,
       p_team_id: selectedTeamId,
     });
-    if (addError) toast.error("Não foi possível adicionar a equipe ao torneio.");
+    if (addError) toast.error(addError.message);
     else {
       toast.success("Equipe adicionada ao torneio.");
       setSelectedTeamId("");
       await load();
     }
   }
+
+  async function removeTeam(membershipId: string) {
+    if (!window.confirm("Remover esta equipe do torneio?")) return;
+    const { error: removeError } = await supabase
+      .from("tournament_teams")
+      .delete()
+      .eq("id", membershipId);
+    if (removeError) toast.error(removeError.message);
+    else {
+      toast.success("Equipe removida do torneio.");
+      await load();
+    }
+  }
+
+  async function attachMatch() {
+    if (!selectedMatchId) return;
+    const { error: attachError } = await supabase.rpc("attach_match_to_tournament", {
+      p_match_id: selectedMatchId,
+      p_tournament_id: id,
+    });
+    if (attachError) toast.error(attachError.message);
+    else {
+      toast.success("Partida vinculada ao torneio.");
+      setSelectedMatchId("");
+      await load();
+    }
+  }
+
+  async function detachMatch(matchId: string) {
+    if (!window.confirm("Desvincular esta partida do torneio?")) return;
+    const { error: detachError } = await supabase.rpc("detach_match_from_tournament", {
+      p_match_id: matchId,
+    });
+    if (detachError) toast.error(detachError.message);
+    else {
+      toast.success("Partida desvinculada.");
+      await load();
+    }
+  }
+
   if (loading)
     return (
       <AppLayout title="Torneio">
@@ -197,13 +294,15 @@ function TournamentDetailsPage() {
   if (error || !tournament)
     return (
       <AppLayout title="Torneio">
-        <ErrorState title="Não foi possível carregar o torneio." />
+        <ErrorState title="Não foi possível carregar o torneio." onRetry={() => void load()} />
       </AppLayout>
     );
+
   const scorer = scorers[0];
   const assister = assists[0];
   const goalkeeper = goalkeepers[0];
   const totalGoals = scorers.reduce((sum, row) => sum + row.total, 0);
+
   return (
     <AppLayout title={tournament.name} subtitle={season?.name ?? "Torneio Resenha FC"}>
       <Button variant="ghost" asChild className="mb-4">
@@ -218,7 +317,7 @@ function TournamentDetailsPage() {
               {tournament.description ?? "Competição oficial do Resenha FC"}
             </p>
             <p className="text-meta mt-1">
-              {matches.length} partidas · {totalGoals} gols
+              {matches.length} partidas · {totalGoals} gols · {tournamentTeams.length} equipes
             </p>
           </div>
           <MatchStatusBadge
@@ -275,17 +374,44 @@ function TournamentDetailsPage() {
           }
         />
       </div>
-      {isAdmin ? (
-        <SectionCard title="Equipes do torneio" icon={Trophy} className="mt-5">
-          <div className="flex flex-wrap gap-2">
+      <SectionCard title="Equipes do torneio" icon={Trophy} className="mt-5">
+        {tournamentTeams.length ? (
+          <div className="grid gap-2">
+            {tournamentTeams.map((item) => (
+              <div
+                key={item.membershipId}
+                className="flex items-center justify-between gap-3 border-b border-border py-2 text-sm"
+              >
+                <strong className="text-navy">{item.team.label}</strong>
+                <div className="flex items-center gap-3">
+                  <span className="text-meta">força {item.team.total_rating}</span>
+                  {isAdmin ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Remover equipe"
+                      onClick={() => void removeTeam(item.membershipId)}
+                    >
+                      <X />
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="Nenhuma equipe vinculada ao torneio." />
+        )}
+        {isAdmin ? (
+          <div className="mt-4 flex flex-wrap gap-2">
             <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-              <SelectTrigger className="w-56">
-                <SelectValue placeholder="Adicionar equipe" />
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Adicionar equipe da temporada" />
               </SelectTrigger>
               <SelectContent>
                 {availableTeams.map((team) => (
                   <SelectItem key={team.id} value={team.id}>
-                    {teamLabel(team)}
+                    {team.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -293,9 +419,14 @@ function TournamentDetailsPage() {
             <Button onClick={() => void addTeam()} disabled={!selectedTeamId}>
               Adicionar equipe
             </Button>
+            {availableTeams.length === 0 ? (
+              <p className="text-meta w-full">
+                Nenhuma equipe disponível nesta temporada. Confirme um sorteio para gerar equipes.
+              </p>
+            ) : null}
           </div>
-        </SectionCard>
-      ) : null}
+        ) : null}
+      </SectionCard>
       <div className="mt-5 grid gap-5">
         <SectionCard title="Classificação" icon={Trophy}>
           {standings.length ? (
@@ -339,12 +470,49 @@ function TournamentDetailsPage() {
           {matches.length ? (
             <div className="grid gap-3">
               {matches.map((match) => (
-                <MatchCard key={match.id} match={match} />
+                <div key={match.id} className="grid gap-2">
+                  <MatchCard match={match} />
+                  {isAdmin ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="justify-self-end"
+                      onClick={() => void detachMatch(match.id)}
+                    >
+                      <Unlink /> Desvincular
+                    </Button>
+                  ) : null}
+                </div>
               ))}
             </div>
           ) : (
             <EmptyState title="Nenhuma partida vinculada ao torneio." />
           )}
+          {isAdmin ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Select value={selectedMatchId} onValueChange={setSelectedMatchId}>
+                <SelectTrigger className="w-72">
+                  <SelectValue placeholder="Vincular partida existente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableMatches.map((match) => (
+                    <SelectItem key={match.id} value={match.id}>
+                      {match.teamALabel} x {match.teamBLabel} · {match.roundLabel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={() => void attachMatch()} disabled={!selectedMatchId}>
+                <Link2 /> Vincular partida
+              </Button>
+              {availableMatches.length === 0 ? (
+                <p className="text-meta w-full">
+                  Nenhuma partida disponível: as partidas precisam ser da mesma temporada e envolver
+                  equipes já adicionadas ao torneio.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </SectionCard>
       </div>
     </AppLayout>
@@ -375,6 +543,7 @@ function Highlight({
     </article>
   );
 }
+
 function RankingList({
   title,
   rows,
@@ -404,9 +573,7 @@ function RankingList({
     </div>
   );
 }
+
 function formatDate(date?: string) {
   return date ? new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR") : "Rodada";
-}
-function teamLabel(team?: MatchTeam) {
-  return team ? `Time ${team.team_number}` : "Equipe";
 }
