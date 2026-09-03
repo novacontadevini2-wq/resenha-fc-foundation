@@ -186,6 +186,9 @@ function PrincipalPage() {
         <QuickLink to="/app/torneios" icon={Trophy} label="Torneios" />
         <QuickLink to="/app/rodadas" icon={CalendarDays} label="Rodadas" />
         <QuickLink to="/app/rankings" icon={BarChart3} label="Rankings" />
+        <div className="sm:hidden">
+          <InstallAppButton variant="tile" />
+        </div>
       </section>
     </AppLayout>
   );
