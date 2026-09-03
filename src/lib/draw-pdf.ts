@@ -82,11 +82,11 @@ export async function exportDrawTeamsPdf({
   const pageH = doc.internal.pageSize.getHeight();
 
   const logo = await toDataUrl("/logotipo%20resenha%20fc.png", { maxSize: 256, keepAlpha: true });
-  const photoCache = new Map<string, { data: string; format: string } | null>();
+  const photoCache = new Map<string, { data: string; format: string; width: number; height: number } | null>();
   for (const team of teams) {
     for (const player of team.players) {
       const url = player.photo_url_snapshot;
-      if (url && !photoCache.has(url)) photoCache.set(url, await toDataUrl(url, { maxSize: 900, quality: 0.72 }));
+      if (url && !photoCache.has(url)) photoCache.set(url, await toDataUrl(url, { maxSize: 700, quality: 0.65 }));
     }
   }
 
