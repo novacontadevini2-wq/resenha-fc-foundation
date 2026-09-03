@@ -7,11 +7,43 @@ const NAVY: [number, number, number] = [10, 35, 66];
 const ORANGE: [number, number, number] = [232, 106, 33];
 const LIGHT: [number, number, number] = [241, 244, 249];
 
-async function toDataUrl(url: string): Promise<{ data: string; format: string } | null> {
+async function toDataUrl(
+  url: string,
+  options: { maxSize?: number; quality?: number; keepAlpha?: boolean } = {},
+): Promise<{ data: string; format: string } | null> {
+  const { maxSize = 900, quality = 0.72, keepAlpha = false } = options;
   try {
     const response = await fetch(url);
     if (!response.ok) return null;
     const blob = await response.blob();
+
+    // Downscale + re-encode to keep the PDF small.
+    try {
+      const bitmap = await createImageBitmap(blob);
+      const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+      const width = Math.max(1, Math.round(bitmap.width * scale));
+      const height = Math.max(1, Math.round(bitmap.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        if (!keepAlpha) {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, width, height);
+        }
+        ctx.drawImage(bitmap, 0, 0, width, height);
+        bitmap.close?.();
+        if (keepAlpha) return { data: canvas.toDataURL("image/png"), format: "PNG" };
+        return { data: canvas.toDataURL("image/jpeg", quality), format: "JPEG" };
+      }
+      bitmap.close?.();
+    } catch {
+      // fall back to raw embed below
+    }
+
     const data = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result));
@@ -24,6 +56,7 @@ async function toDataUrl(url: string): Promise<{ data: string; format: string } 
     return null;
   }
 }
+
 
 function initials(name: string) {
   return name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("");
