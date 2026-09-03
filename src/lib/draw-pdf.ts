@@ -146,26 +146,32 @@ export async function exportDrawTeamsPdf({
       doc.roundedRect(x, cardsTop, cardW, cardH, 3, 3, "F");
 
       const photoPad = 6;
-      const photoW = cardW - photoPad * 2;
-      const photoH = cardH * 0.62;
+      const photoMaxW = cardW - photoPad * 2;
+      const photoMaxH = cardH * 0.48;
+      const photoAreaTop = cardsTop + photoPad;
       const photo = player.photo_url_snapshot ? photoCache.get(player.photo_url_snapshot) : null;
-      if (photo) {
-        doc.addImage(photo.data, photo.format, x + photoPad, cardsTop + photoPad, photoW, photoH, undefined, "FAST");
+      if (photo && photo.width > 0 && photo.height > 0) {
+        const scale = Math.min(photoMaxW / photo.width, photoMaxH / photo.height);
+        const photoW = Math.max(1, photo.width * scale);
+        const photoH = Math.max(1, photo.height * scale);
+        const photoX = x + photoPad + (photoMaxW - photoW) / 2;
+        const photoY = photoAreaTop + (photoMaxH - photoH) / 2;
+        doc.addImage(photo.data, photo.format, photoX, photoY, photoW, photoH, undefined, "FAST");
       } else {
         doc.setFillColor(...NAVY);
-        doc.roundedRect(x + photoPad, cardsTop + photoPad, photoW, photoH, 2, 2, "F");
+        doc.roundedRect(x + photoPad, photoAreaTop, photoMaxW, photoMaxH, 2, 2, "F");
         doc.setTextColor(255, 255, 255);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(34);
         doc.text(
           initials(player.player_name_snapshot) || "RF",
           x + cardW / 2,
-          cardsTop + photoPad + photoH / 2 + 6,
+          photoAreaTop + photoMaxH / 2 + 6,
           { align: "center" },
         );
       }
 
-      let textY = cardsTop + photoPad + photoH + 12;
+      let textY = photoAreaTop + photoMaxH + 14;
       doc.setTextColor(...NAVY);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(24);
