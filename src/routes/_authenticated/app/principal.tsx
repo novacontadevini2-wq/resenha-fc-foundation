@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { BarChart3, CalendarDays, Shuffle, Trophy, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
