@@ -10,7 +10,7 @@ const LIGHT: [number, number, number] = [241, 244, 249];
 async function toDataUrl(
   url: string,
   options: { maxSize?: number; quality?: number; keepAlpha?: boolean } = {},
-): Promise<{ data: string; format: string } | null> {
+): Promise<{ data: string; format: string; width: number; height: number } | null> {
   const { maxSize = 900, quality = 0.72, keepAlpha = false } = options;
   try {
     const response = await fetch(url);
@@ -36,8 +36,8 @@ async function toDataUrl(
         }
         ctx.drawImage(bitmap, 0, 0, width, height);
         bitmap.close?.();
-        if (keepAlpha) return { data: canvas.toDataURL("image/png"), format: "PNG" };
-        return { data: canvas.toDataURL("image/jpeg", quality), format: "JPEG" };
+        if (keepAlpha) return { data: canvas.toDataURL("image/png"), format: "PNG", width, height };
+        return { data: canvas.toDataURL("image/jpeg", quality), format: "JPEG", width, height };
       }
       bitmap.close?.();
     } catch {
@@ -51,7 +51,7 @@ async function toDataUrl(
       reader.readAsDataURL(blob);
     });
     const format = blob.type.includes("png") ? "PNG" : "JPEG";
-    return { data, format };
+    return { data, format, width: 1, height: 1 };
   } catch {
     return null;
   }
@@ -82,11 +82,11 @@ export async function exportDrawTeamsPdf({
   const pageH = doc.internal.pageSize.getHeight();
 
   const logo = await toDataUrl("/logotipo%20resenha%20fc.png", { maxSize: 256, keepAlpha: true });
-  const photoCache = new Map<string, { data: string; format: string } | null>();
+  const photoCache = new Map<string, { data: string; format: string; width: number; height: number } | null>();
   for (const team of teams) {
     for (const player of team.players) {
       const url = player.photo_url_snapshot;
-      if (url && !photoCache.has(url)) photoCache.set(url, await toDataUrl(url, { maxSize: 900, quality: 0.72 }));
+      if (url && !photoCache.has(url)) photoCache.set(url, await toDataUrl(url, { maxSize: 700, quality: 0.65 }));
     }
   }
 
@@ -146,26 +146,32 @@ export async function exportDrawTeamsPdf({
       doc.roundedRect(x, cardsTop, cardW, cardH, 3, 3, "F");
 
       const photoPad = 6;
-      const photoW = cardW - photoPad * 2;
-      const photoH = cardH * 0.62;
+      const photoMaxW = cardW - photoPad * 2;
+      const photoMaxH = cardH * 0.48;
+      const photoAreaTop = cardsTop + photoPad;
       const photo = player.photo_url_snapshot ? photoCache.get(player.photo_url_snapshot) : null;
-      if (photo) {
-        doc.addImage(photo.data, photo.format, x + photoPad, cardsTop + photoPad, photoW, photoH, undefined, "FAST");
+      if (photo && photo.width > 0 && photo.height > 0) {
+        const scale = Math.min(photoMaxW / photo.width, photoMaxH / photo.height);
+        const photoW = Math.max(1, photo.width * scale);
+        const photoH = Math.max(1, photo.height * scale);
+        const photoX = x + photoPad + (photoMaxW - photoW) / 2;
+        const photoY = photoAreaTop + (photoMaxH - photoH) / 2;
+        doc.addImage(photo.data, photo.format, photoX, photoY, photoW, photoH, undefined, "FAST");
       } else {
         doc.setFillColor(...NAVY);
-        doc.roundedRect(x + photoPad, cardsTop + photoPad, photoW, photoH, 2, 2, "F");
+        doc.roundedRect(x + photoPad, photoAreaTop, photoMaxW, photoMaxH, 2, 2, "F");
         doc.setTextColor(255, 255, 255);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(34);
         doc.text(
           initials(player.player_name_snapshot) || "RF",
           x + cardW / 2,
-          cardsTop + photoPad + photoH / 2 + 6,
+          photoAreaTop + photoMaxH / 2 + 6,
           { align: "center" },
         );
       }
 
-      let textY = cardsTop + photoPad + photoH + 12;
+      let textY = photoAreaTop + photoMaxH + 14;
       doc.setTextColor(...NAVY);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(24);
