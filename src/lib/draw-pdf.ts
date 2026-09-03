@@ -77,16 +77,16 @@ export async function exportDrawTeamsPdf({
   subtitle?: string;
   fileName?: string;
 }) {
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
 
-  const logo = await toDataUrl("/logotipo%20resenha%20fc.png");
+  const logo = await toDataUrl("/logotipo%20resenha%20fc.png", { maxSize: 256, keepAlpha: true });
   const photoCache = new Map<string, { data: string; format: string } | null>();
   for (const team of teams) {
     for (const player of team.players) {
       const url = player.photo_url_snapshot;
-      if (url && !photoCache.has(url)) photoCache.set(url, await toDataUrl(url));
+      if (url && !photoCache.has(url)) photoCache.set(url, await toDataUrl(url, { maxSize: 900, quality: 0.72 }));
     }
   }
 
