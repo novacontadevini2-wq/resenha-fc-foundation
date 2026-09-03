@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 import { BrandMark } from "@/components/brand/BrandMark";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
