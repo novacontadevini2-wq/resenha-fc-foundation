@@ -23,6 +23,9 @@ export function AppHeader() {
       <div className="mx-auto flex min-w-0 max-w-3xl items-center justify-between gap-3 px-4 py-3">
         <BrandMark size="sm" tone="light" className="min-w-0" />
         <div className="flex items-center gap-2">
+          <div className="hidden sm:block">
+            <InstallAppButton />
+          </div>
           <NotificationBell />
           <Badge className="bg-orange/15 text-orange hover:bg-orange/15">
             {isAdmin ? "Admin" : "Jogador"}
