@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { BarChart3, CalendarDays, Shuffle, Trophy, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -186,6 +187,9 @@ function PrincipalPage() {
         <QuickLink to="/app/torneios" icon={Trophy} label="Torneios" />
         <QuickLink to="/app/rodadas" icon={CalendarDays} label="Rodadas" />
         <QuickLink to="/app/rankings" icon={BarChart3} label="Rankings" />
+        <div className="sm:hidden">
+          <InstallAppButton variant="tile" />
+        </div>
       </section>
     </AppLayout>
   );
