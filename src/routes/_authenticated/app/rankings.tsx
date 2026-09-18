@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Goal, Shield, Trophy, Users } from "lucide-react";
+import { Goal, Handshake, Shield, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { EmptyState, ErrorState, LoadingState } from "@/components/feedback/states";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { PlayerStatHighlight } from "@/components/stats/PlayerStatHighlight";
 import { SectionCard } from "@/components/ui/section-card";
 import {
   Select,
@@ -182,6 +183,28 @@ function RankingsPage() {
           </Select>
         </label>
       </div>
+      <div className="mb-5 grid gap-3 sm:grid-cols-2">
+        <PlayerStatHighlight
+          icon={Goal}
+          title="Artilheiro"
+          name={scorerRows[0]?.playerName ?? "Ainda sem gols"}
+          detail={
+            scorerRows[0]
+              ? `${scorerRows[0].total} ${scorerRows[0].total === 1 ? "gol marcado" : "gols marcados"}`
+              : "Os gols contados pelo juiz aparecem aqui."
+          }
+        />
+        <PlayerStatHighlight
+          icon={Handshake}
+          title="Garçom"
+          name={assistRows[0]?.playerName ?? "Ainda sem assistências"}
+          detail={
+            assistRows[0]
+              ? `${assistRows[0].total} ${assistRows[0].total === 1 ? "assistência" : "assistências"}`
+              : "As assistências contadas pelo juiz aparecem aqui."
+          }
+        />
+      </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <RankingSection
           title="Artilharia"
@@ -195,7 +218,7 @@ function RankingsPage() {
         />
         <RankingSection
           title="Garçons"
-          icon={Trophy}
+          icon={Handshake}
           rows={assistRows.map((row) => ({
             name: row.playerName,
             value: `${row.total} assistências`,
