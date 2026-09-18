@@ -24,6 +24,7 @@ import { Route as AuthenticatedAppRodadasRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAppSorteioRouteImport } from './routes/_authenticated/app/sorteio'
 import { Route as AuthenticatedAppTorneiosRouteImport } from './routes/_authenticated/app/torneios'
 import { Route as AuthenticatedAppAdminIndexRouteImport } from './routes/_authenticated/app/admin/index'
+import { Route as AuthenticatedAppAdminAcessosRouteImport } from './routes/_authenticated/app/admin/acessos'
 import { Route as AuthenticatedAppAdminAuditoriaRouteImport } from './routes/_authenticated/app/admin/auditoria'
 import { Route as AuthenticatedAppAdminAvisosRouteImport } from './routes/_authenticated/app/admin/avisos'
 import { Route as AuthenticatedAppAdminConfiguracoesRouteImport } from './routes/_authenticated/app/admin/configuracoes'
@@ -117,6 +118,12 @@ const AuthenticatedAppAdminIndexRoute =
     path: '/app/admin/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAppAdminAcessosRoute =
+  AuthenticatedAppAdminAcessosRouteImport.update({
+    id: '/app/admin/acessos',
+    path: '/app/admin/acessos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppAdminAuditoriaRoute =
   AuthenticatedAppAdminAuditoriaRouteImport.update({
     id: '/app/admin/auditoria',
@@ -192,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/app/rodadas': typeof AuthenticatedAppRodadasRouteWithChildren
   '/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/app/torneios': typeof AuthenticatedAppTorneiosRouteWithChildren
+  '/app/admin/acessos': typeof AuthenticatedAppAdminAcessosRoute
   '/app/admin/auditoria': typeof AuthenticatedAppAdminAuditoriaRoute
   '/app/admin/avisos': typeof AuthenticatedAppAdminAvisosRoute
   '/app/admin/configuracoes': typeof AuthenticatedAppAdminConfiguracoesRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/app/rodadas': typeof AuthenticatedAppRodadasRouteWithChildren
   '/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/app/torneios': typeof AuthenticatedAppTorneiosRouteWithChildren
+  '/app/admin/acessos': typeof AuthenticatedAppAdminAcessosRoute
   '/app/admin/auditoria': typeof AuthenticatedAppAdminAuditoriaRoute
   '/app/admin/avisos': typeof AuthenticatedAppAdminAvisosRoute
   '/app/admin/configuracoes': typeof AuthenticatedAppAdminConfiguracoesRoute
@@ -246,6 +255,7 @@ export interface FileRoutesById {
   '/_authenticated/app/rodadas': typeof AuthenticatedAppRodadasRouteWithChildren
   '/_authenticated/app/sorteio': typeof AuthenticatedAppSorteioRoute
   '/_authenticated/app/torneios': typeof AuthenticatedAppTorneiosRouteWithChildren
+  '/_authenticated/app/admin/acessos': typeof AuthenticatedAppAdminAcessosRoute
   '/_authenticated/app/admin/auditoria': typeof AuthenticatedAppAdminAuditoriaRoute
   '/_authenticated/app/admin/avisos': typeof AuthenticatedAppAdminAvisosRoute
   '/_authenticated/app/admin/configuracoes': typeof AuthenticatedAppAdminConfiguracoesRoute
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/app/rodadas'
     | '/app/sorteio'
     | '/app/torneios'
+    | '/app/admin/acessos'
     | '/app/admin/auditoria'
     | '/app/admin/avisos'
     | '/app/admin/configuracoes'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/app/rodadas'
     | '/app/sorteio'
     | '/app/torneios'
+    | '/app/admin/acessos'
     | '/app/admin/auditoria'
     | '/app/admin/avisos'
     | '/app/admin/configuracoes'
@@ -327,6 +339,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/rodadas'
     | '/_authenticated/app/sorteio'
     | '/_authenticated/app/torneios'
+    | '/_authenticated/app/admin/acessos'
     | '/_authenticated/app/admin/auditoria'
     | '/_authenticated/app/admin/avisos'
     | '/_authenticated/app/admin/configuracoes'
@@ -453,6 +466,13 @@ declare module '@tanstack/react-router' {
       path: '/app/admin'
       fullPath: '/app/admin/'
       preLoaderRoute: typeof AuthenticatedAppAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/admin/acessos': {
+      id: '/_authenticated/app/admin/acessos'
+      path: '/app/admin/acessos'
+      fullPath: '/app/admin/acessos'
+      preLoaderRoute: typeof AuthenticatedAppAdminAcessosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/admin/auditoria': {
@@ -594,6 +614,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRodadasRoute: typeof AuthenticatedAppRodadasRouteWithChildren
   AuthenticatedAppSorteioRoute: typeof AuthenticatedAppSorteioRoute
   AuthenticatedAppTorneiosRoute: typeof AuthenticatedAppTorneiosRouteWithChildren
+  AuthenticatedAppAdminAcessosRoute: typeof AuthenticatedAppAdminAcessosRoute
   AuthenticatedAppAdminAuditoriaRoute: typeof AuthenticatedAppAdminAuditoriaRoute
   AuthenticatedAppAdminAvisosRoute: typeof AuthenticatedAppAdminAvisosRoute
   AuthenticatedAppAdminConfiguracoesRoute: typeof AuthenticatedAppAdminConfiguracoesRoute
@@ -613,6 +634,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRodadasRoute: AuthenticatedAppRodadasRouteWithChildren,
   AuthenticatedAppSorteioRoute: AuthenticatedAppSorteioRoute,
   AuthenticatedAppTorneiosRoute: AuthenticatedAppTorneiosRouteWithChildren,
+  AuthenticatedAppAdminAcessosRoute: AuthenticatedAppAdminAcessosRoute,
   AuthenticatedAppAdminAuditoriaRoute: AuthenticatedAppAdminAuditoriaRoute,
   AuthenticatedAppAdminAvisosRoute: AuthenticatedAppAdminAvisosRoute,
   AuthenticatedAppAdminConfiguracoesRoute:
