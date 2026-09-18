@@ -157,6 +157,7 @@ function MatchesPage() {
     setOpenedScoreB(String(match.score_b));
     setOpenedGoalTeam(match.team_a_id);
     setOpenedGoalPlayer("");
+    setOpenedGoalAssist("none");
     const [{ data: goals, error: goalsError }, { data: players, error: playersError }] = await Promise.all([
       supabase.from("match_goals").select("*").eq("match_id", match.id).order("created_at"),
       supabase.from("draw_team_players").select("team_id, player_id, player_name_snapshot").eq("draw_id", match.draw_id).in("team_id", [match.team_a_id, match.team_b_id]),
@@ -246,6 +247,53 @@ function MatchesPage() {
     setOpenedMatch((current) => current ? { ...current, status } : current);
     setMatches((current) => current.map((match) => match.id === openedMatch.id ? { ...match, status } : match));
     toast.success(action === "start_match" ? "Partida em andamento." : "Partida finalizada.");
+  }
+
+  async function cancelOpenedMatch() {
+    if (!openedMatch) return;
+    if (!window.confirm("Deseja cancelar esta partida?")) return;
+    setSaving(true);
+    const { error: cancelError } = await supabase.rpc("cancel_match", { p_match_id: openedMatch.id });
+    setSaving(false);
+    if (cancelError) {
+      toast.error(cancelError.message);
+      return;
+    }
+    toast.success("Partida cancelada.");
+    setOpenedMatch(null);
+    await loadMatches();
+  }
+
+  async function removeOpenedGoal(goal: MatchGoal) {
+    if (!window.confirm("Deseja remover este gol?")) return;
+    setSaving(true);
+    const { error: goalError } = await supabase.rpc("delete_match_goal", { p_goal_id: goal.id });
+    setSaving(false);
+    if (goalError) {
+      toast.error(goalError.message);
+      return;
+    }
+    setOpenedGoals((current) => current.filter((item) => item.id !== goal.id));
+    toast.success("Gol removido.");
+    await loadMatches();
+  }
+
+  async function deleteMatch(match: MatchCardData) {
+    if (
+      !window.confirm(
+        "Excluir esta partida? Todos os gols, assistências e estatísticas dela serão apagados.",
+      )
+    )
+      return;
+    setSaving(true);
+    const { error: deleteError } = await supabase.rpc("delete_match", { p_match_id: match.id });
+    setSaving(false);
+    if (deleteError) {
+      toast.error(deleteError.message);
+      return;
+    }
+    toast.success("Partida excluída.");
+    setMatches((current) => current.filter((item) => item.id !== match.id));
   }
 
   async function createMatch(event: React.FormEvent) {
