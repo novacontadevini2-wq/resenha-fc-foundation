@@ -28,11 +28,6 @@ export function MatchDialogBody({
   match,
   isAdmin,
   saving,
-  scoreA,
-  scoreB,
-  onScoreA,
-  onScoreB,
-  onSaveScore,
   onChangeStatus,
   onCancelMatch,
   players,
@@ -51,11 +46,6 @@ export function MatchDialogBody({
   match: MatchCardData;
   isAdmin: boolean;
   saving: boolean;
-  scoreA: string;
-  scoreB: string;
-  onScoreA: (value: string) => void;
-  onScoreB: (value: string) => void;
-  onSaveScore: (event: FormEvent) => void;
   onChangeStatus: (action: "start_match" | "finish_match") => void;
   onCancelMatch: () => void;
   players: DialogTeamPlayer[];
@@ -100,34 +90,11 @@ export function MatchDialogBody({
 
       {canEdit ? (
         <>
-          <form onSubmit={onSaveScore} className="grid gap-2 border-t pt-3">
-            <strong>Editar placar</strong>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="grid gap-1">
-                {match.teamALabel}
-                <Input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={scoreA}
-                  onChange={(event) => onScoreA(event.target.value)}
-                />
-              </label>
-              <label className="grid gap-1">
-                {match.teamBLabel}
-                <Input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={scoreB}
-                  onChange={(event) => onScoreB(event.target.value)}
-                />
-              </label>
-            </div>
-            <Button type="submit" disabled={saving}>
-              Salvar placar
-            </Button>
-          </form>
+          <p className="text-muted-foreground">
+            O placar é atualizado automaticamente ao registrar ou remover gols.
+          </p>
+
+
 
           <div className="flex flex-wrap gap-2">
             <Button
