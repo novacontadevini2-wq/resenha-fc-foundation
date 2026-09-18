@@ -219,6 +219,9 @@ function MatchesPage() {
       p_player_id: openedGoalPlayer,
       p_team_id: openedGoalTeam,
       ...(minute === null ? {} : { p_minute: minute }),
+      ...(openedGoalAssist && openedGoalAssist !== "none"
+        ? { p_assist_player_id: openedGoalAssist }
+        : {}),
     });
     setSaving(false);
     if (goalError) {
@@ -231,6 +234,18 @@ function MatchesPage() {
     setOpenedScoreB(String(Number(openedScoreB) + (openedGoalTeam === openedMatch.team_b_id ? 1 : 0)));
     setOpenedGoalPlayer("");
     setOpenedGoalMinute("");
+    setOpenedGoalAssist("none");
+    setMatches((current) =>
+      current.map((item) =>
+        item.id === openedMatch.id
+          ? {
+              ...item,
+              score_a: item.score_a + (openedGoalTeam === openedMatch.team_a_id ? 1 : 0),
+              score_b: item.score_b + (openedGoalTeam === openedMatch.team_b_id ? 1 : 0),
+            }
+          : item,
+      ),
+    );
     toast.success(`Gol de ${player?.player_name_snapshot ?? "jogador"} registrado.`);
   }
 
