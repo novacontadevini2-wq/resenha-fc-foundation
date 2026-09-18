@@ -269,7 +269,7 @@ function MeuPerfilPage() {
   if (error) {
     return (
       <AppLayout title="Meu jogo">
-        <ErrorState message={error} onRetry={() => void load()} />
+        <ErrorState title={error} onRetry={() => void load()} />
       </AppLayout>
     );
   }
@@ -302,7 +302,7 @@ function MeuPerfilPage() {
               </Button>
             </div>
           ) : (
-            <EmptyState message="Nenhum jogador disponível para vincular. Peça ao administrador para cadastrar você no elenco." />
+            <EmptyState title="Nenhum jogador disponível para vincular. Peça ao administrador para cadastrar você no elenco." />
           )}
         </SectionCard>
       </AppLayout>
@@ -402,7 +402,7 @@ function MeuPerfilPage() {
             </div>
           </div>
         ) : (
-          <EmptyState message="Nenhuma rodada marcada por enquanto." />
+          <EmptyState title="Nenhuma rodada marcada por enquanto." />
         )}
       </SectionCard>
 
@@ -454,7 +454,7 @@ function MeuPerfilPage() {
               ))}
             </div>
           ) : (
-            <EmptyState message="Você ainda não tem partidas finalizadas." />
+            <EmptyState title="Você ainda não tem partidas finalizadas." />
           )}
         </SectionCard>
       </div>
