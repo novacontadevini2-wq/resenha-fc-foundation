@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { LoadingState, EmptyState, ErrorState } from "@/components/feedback/states";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MatchCard, type MatchCardData } from "@/components/matches/MatchCard";
+import { MatchDialogBody } from "@/components/matches/MatchDialogBody";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionCard } from "@/components/ui/section-card";
