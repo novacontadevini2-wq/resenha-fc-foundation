@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrimeiroAcessoRouteImport } from './routes/primeiro-acesso'
 import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
 import { Route as AuthenticatedAppJogadoresRouteImport } from './routes/_authenticated/app/jogadores'
+import { Route as AuthenticatedAppMeuPerfilRouteImport } from './routes/_authenticated/app/meu-perfil'
 import { Route as AuthenticatedAppNotificacoesRouteImport } from './routes/_authenticated/app/notificacoes'
 import { Route as AuthenticatedAppPartidasRouteImport } from './routes/_authenticated/app/partidas'
 import { Route as AuthenticatedAppPrincipalRouteImport } from './routes/_authenticated/app/principal'
@@ -62,6 +63,12 @@ const AuthenticatedAppJogadoresRoute =
   AuthenticatedAppJogadoresRouteImport.update({
     id: '/app/jogadores',
     path: '/app/jogadores',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppMeuPerfilRoute =
+  AuthenticatedAppMeuPerfilRouteImport.update({
+    id: '/app/meu-perfil',
+    path: '/app/meu-perfil',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAppNotificacoesRoute =
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/app/jogadores': typeof AuthenticatedAppJogadoresRouteWithChildren
+  '/app/meu-perfil': typeof AuthenticatedAppMeuPerfilRoute
   '/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/app/partidas': typeof AuthenticatedAppPartidasRouteWithChildren
   '/app/principal': typeof AuthenticatedAppPrincipalRoute
@@ -202,6 +210,7 @@ export interface FileRoutesByTo {
   '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/app/jogadores': typeof AuthenticatedAppJogadoresRouteWithChildren
+  '/app/meu-perfil': typeof AuthenticatedAppMeuPerfilRoute
   '/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/app/partidas': typeof AuthenticatedAppPartidasRouteWithChildren
   '/app/principal': typeof AuthenticatedAppPrincipalRoute
@@ -229,6 +238,7 @@ export interface FileRoutesById {
   '/primeiro-acesso': typeof PrimeiroAcessoRoute
   '/recuperar-senha': typeof RecuperarSenhaRoute
   '/_authenticated/app/jogadores': typeof AuthenticatedAppJogadoresRouteWithChildren
+  '/_authenticated/app/meu-perfil': typeof AuthenticatedAppMeuPerfilRoute
   '/_authenticated/app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/_authenticated/app/partidas': typeof AuthenticatedAppPartidasRouteWithChildren
   '/_authenticated/app/principal': typeof AuthenticatedAppPrincipalRoute
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/app/jogadores'
+    | '/app/meu-perfil'
     | '/app/notificacoes'
     | '/app/partidas'
     | '/app/principal'
@@ -281,6 +292,7 @@ export interface FileRouteTypes {
     | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/app/jogadores'
+    | '/app/meu-perfil'
     | '/app/notificacoes'
     | '/app/partidas'
     | '/app/principal'
@@ -307,6 +319,7 @@ export interface FileRouteTypes {
     | '/primeiro-acesso'
     | '/recuperar-senha'
     | '/_authenticated/app/jogadores'
+    | '/_authenticated/app/meu-perfil'
     | '/_authenticated/app/notificacoes'
     | '/_authenticated/app/partidas'
     | '/_authenticated/app/principal'
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       path: '/app/jogadores'
       fullPath: '/app/jogadores'
       preLoaderRoute: typeof AuthenticatedAppJogadoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/meu-perfil': {
+      id: '/_authenticated/app/meu-perfil'
+      path: '/app/meu-perfil'
+      fullPath: '/app/meu-perfil'
+      preLoaderRoute: typeof AuthenticatedAppMeuPerfilRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/app/notificacoes': {
@@ -566,6 +586,7 @@ const AuthenticatedAppTorneiosRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppJogadoresRoute: typeof AuthenticatedAppJogadoresRouteWithChildren
+  AuthenticatedAppMeuPerfilRoute: typeof AuthenticatedAppMeuPerfilRoute
   AuthenticatedAppNotificacoesRoute: typeof AuthenticatedAppNotificacoesRoute
   AuthenticatedAppPartidasRoute: typeof AuthenticatedAppPartidasRouteWithChildren
   AuthenticatedAppPrincipalRoute: typeof AuthenticatedAppPrincipalRoute
@@ -584,6 +605,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppJogadoresRoute: AuthenticatedAppJogadoresRouteWithChildren,
+  AuthenticatedAppMeuPerfilRoute: AuthenticatedAppMeuPerfilRoute,
   AuthenticatedAppNotificacoesRoute: AuthenticatedAppNotificacoesRoute,
   AuthenticatedAppPartidasRoute: AuthenticatedAppPartidasRouteWithChildren,
   AuthenticatedAppPrincipalRoute: AuthenticatedAppPrincipalRoute,
