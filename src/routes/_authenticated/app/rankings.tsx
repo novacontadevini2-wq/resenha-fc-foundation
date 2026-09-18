@@ -218,7 +218,7 @@ function RankingsPage() {
         />
         <RankingSection
           title="Garçons"
-          icon={Trophy}
+          icon={Handshake}
           rows={assistRows.map((row) => ({
             name: row.playerName,
             value: `${row.total} assistências`,
