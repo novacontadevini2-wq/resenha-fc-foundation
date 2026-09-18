@@ -538,7 +538,13 @@ function MatchesPage() {
       ) : (
         <div className="grid gap-3">
           {visibleMatches.map((match) => (
-            <MatchCard key={match.id} match={match} admin={isAdmin} onOpen={() => openMatch(match)} />
+            <MatchCard
+              key={match.id}
+              match={match}
+              admin={isAdmin}
+              onOpen={() => openMatch(match)}
+              {...(isAdmin ? { onDelete: () => void deleteMatch(match) } : {})}
+            />
           ))}
         </div>
       )}
