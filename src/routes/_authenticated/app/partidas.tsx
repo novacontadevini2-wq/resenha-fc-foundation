@@ -59,6 +59,7 @@ function MatchesPage() {
   const [openedGoalTeam, setOpenedGoalTeam] = useState("");
   const [openedGoalPlayer, setOpenedGoalPlayer] = useState("");
   const [openedGoalMinute, setOpenedGoalMinute] = useState("");
+  const [openedGoalAssist, setOpenedGoalAssist] = useState("none");
 
   async function loadMatches() {
     setLoading(true);
