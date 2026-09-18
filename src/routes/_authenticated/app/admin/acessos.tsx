@@ -133,7 +133,7 @@ function AdminAccessPage() {
   return (
     <AppLayout title="Acessos" subtitle="Crie o login dos jogadores da pelada">
       {loadError ? (
-        <ErrorState title={loadError} actionLabel="Tentar novamente" onAction={() => void refresh()} />
+        <ErrorState title={loadError} onRetry={() => void refresh()} />
       ) : !rows ? (
         <LoadingState label="Carregando jogadores..." />
       ) : (
