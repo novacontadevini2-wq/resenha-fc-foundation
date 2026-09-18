@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Shield, Shuffle, Swords, Trophy, Users } from "lucide-react";
+import { Home, Shield, Shuffle, Swords, Trophy, User, Users } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
-const items = [
+const adminItems = [
   { to: "/app/principal", label: "Principal", icon: Home },
   { to: "/app/jogadores", label: "Jogadores", icon: Users },
   { to: "/app/sorteio", label: "Sorteio", icon: Shuffle },
@@ -12,11 +12,19 @@ const items = [
   { to: "/app/torneios", label: "Torneio", icon: Trophy },
 ] as const;
 
+const playerItems = [
+  { to: "/app/principal", label: "Principal", icon: Home },
+  { to: "/app/meu-perfil", label: "Meu jogo", icon: User },
+  { to: "/app/partidas", label: "Partidas", icon: Swords },
+  { to: "/app/jogadores", label: "Elenco", icon: Users },
+  { to: "/app/torneios", label: "Torneio", icon: Trophy },
+] as const;
+
 export function BottomNav() {
   const { isAdmin } = useAuth();
   const navItems = isAdmin
-    ? [...items, { to: "/app/admin", label: "Admin", icon: Shield } as const]
-    : items;
+    ? [...adminItems, { to: "/app/admin", label: "Admin", icon: Shield } as const]
+    : playerItems;
 
   return (
     <nav

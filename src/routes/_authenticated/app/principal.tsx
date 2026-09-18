@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { InstallAppButton } from "@/components/InstallAppButton";
-import { BarChart3, CalendarDays, Shuffle, Trophy, Users } from "lucide-react";
+import { BarChart3, CalendarDays, Shuffle, Trophy, User, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -182,6 +182,7 @@ function PrincipalPage() {
         </SectionCard>
       ) : null}
       <section className="mt-5 grid gap-3 sm:grid-cols-3">
+        <QuickLink to="/app/meu-perfil" icon={User} label="Meu jogo" />
         <QuickLink to="/app/jogadores" icon={Users} label="Jogadores" />
         <QuickLink to="/app/sorteio" icon={Shuffle} label="Fazer sorteio" />
         <QuickLink to="/app/torneios" icon={Trophy} label="Torneios" />
@@ -200,7 +201,7 @@ function QuickLink({
   icon: Icon,
   label,
 }: {
-  to: "/app/jogadores" | "/app/sorteio" | "/app/torneios" | "/app/rodadas" | "/app/rankings";
+  to: "/app/meu-perfil" | "/app/jogadores" | "/app/sorteio" | "/app/torneios" | "/app/rodadas" | "/app/rankings";
   icon: typeof Users;
   label: string;
 }) {

@@ -908,6 +908,10 @@ export type Database = {
         Returns: undefined
       }
       cancel_match: { Args: { p_match_id: string }; Returns: undefined }
+      claim_player_profile: {
+        Args: { p_player_id: string }
+        Returns: undefined
+      }
       confirm_draw: { Args: { p_draw_id: string }; Returns: undefined }
       create_match: {
         Args: {
@@ -977,6 +981,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      my_player_id: { Args: never; Returns: string }
       notify_round_participants: {
         Args: {
           p_entity_id?: string
@@ -1023,6 +1028,10 @@ export type Database = {
       }
       set_match_score: {
         Args: { p_match_id: string; p_score_a: number; p_score_b: number }
+        Returns: undefined
+      }
+      set_my_round_participation: {
+        Args: { p_round_id: string; p_status: string }
         Returns: undefined
       }
       set_tournament_status: {
