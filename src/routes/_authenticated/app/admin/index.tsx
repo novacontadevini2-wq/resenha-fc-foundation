@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ClipboardList,
   Goal,
+  KeyRound,
   Megaphone,
   Settings,
   ShieldCheck,
@@ -212,6 +213,7 @@ function AdminDashboard() {
         <div className="grid gap-2 sm:grid-cols-2">
           <QuickLink to="/app/admin/relatorios" icon={BarChart3} label="Relatórios" />
           <QuickLink to="/app/admin/auditoria" icon={ClipboardList} label="Auditoria" />
+          <QuickLink to="/app/admin/acessos" icon={KeyRound} label="Acessos dos jogadores" />
           <QuickLink to="/app/admin/configuracoes" icon={Settings} label="Configurações" />
         </div>
       </SectionCard>
@@ -252,7 +254,8 @@ function QuickLink({
     | "/app/admin/avisos"
     | "/app/admin/relatorios"
     | "/app/admin/auditoria"
-    | "/app/admin/configuracoes";
+    | "/app/admin/configuracoes"
+    | "/app/admin/acessos";
   icon: typeof Users;
   label: string;
 }) {
