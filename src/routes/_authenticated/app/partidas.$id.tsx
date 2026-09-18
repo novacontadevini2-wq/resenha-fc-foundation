@@ -82,7 +82,7 @@ function MatchDetailsPage() {
       return;
     }
     const snapshotPlayers = (snapshotData ?? []) as TeamPlayer[];
-    setMatch(currentMatch); setRound((roundData ?? null) as Round | null); setTeams(nextTeams); setGoals((goalData ?? []) as MatchGoal[]); setAssists((assistData ?? []) as MatchAssist[]); setGoalkeeperStats((keeperData ?? []) as MatchGoalkeeperStat[]); setTeamPlayers(snapshotPlayers); setScoreA(String(currentMatch.score_a)); setScoreB(String(currentMatch.score_b)); setEditTeamA(currentMatch.team_a_id); setEditTeamB(currentMatch.team_b_id); setEditScheduledAt(currentMatch.scheduled_at ? new Date(currentMatch.scheduled_at).toISOString().slice(0, 16) : ""); setEditNotes(currentMatch.notes ?? ""); setLoading(false);
+    setMatch(currentMatch); setRound((roundData ?? null) as Round | null); setTeams(nextTeams); setGoals((goalData ?? []) as MatchGoal[]); setAssists((assistData ?? []) as MatchAssist[]); setGoalkeeperStats((keeperData ?? []) as MatchGoalkeeperStat[]); setTeamPlayers(snapshotPlayers); setEditTeamA(currentMatch.team_a_id); setEditTeamB(currentMatch.team_b_id); setEditScheduledAt(currentMatch.scheduled_at ? new Date(currentMatch.scheduled_at).toISOString().slice(0, 16) : ""); setEditNotes(currentMatch.notes ?? ""); setLoading(false);
   }
 
   useEffect(() => { void load(); }, [id]);
