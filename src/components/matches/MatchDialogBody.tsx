@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MatchTimer } from "@/components/matches/MatchTimer";
 import type { MatchGoal, MatchStatus } from "@/types";
 
 export type DialogTeamPlayer = { team_id: string; player_id: string; player_name_snapshot: string };
@@ -81,9 +82,17 @@ export function MatchDialogBody({
         <strong>Data e horário:</strong>{" "}
         {match.scheduled_at ? new Date(match.scheduled_at).toLocaleString("pt-BR") : "Não informado"}
       </p>
-      <p>
-        <strong>Situação:</strong> {MATCH_STATUS_LABEL[match.status as MatchStatus] ?? match.status}
-      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <p>
+          <strong>Situação:</strong>{" "}
+          {MATCH_STATUS_LABEL[match.status as MatchStatus] ?? match.status}
+        </p>
+        <MatchTimer
+          status={match.status}
+          startedAt={match.started_at}
+          finishedAt={match.finished_at}
+        />
+      </div>
       <p>
         <strong>Placar:</strong> {match.teamALabel} {match.score_a} x {match.score_b}{" "}
         {match.teamBLabel}
