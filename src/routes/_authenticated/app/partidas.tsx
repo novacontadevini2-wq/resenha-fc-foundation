@@ -554,7 +554,32 @@ function MatchesPage() {
             <DialogTitle>Detalhes da partida</DialogTitle>
             <DialogDescription>{openedMatch?.roundLabel} · {openedMatch?.teamALabel} x {openedMatch?.teamBLabel}</DialogDescription>
           </DialogHeader>
-          {openedMatch ? <div className="grid gap-4 text-sm"><p><strong>Data e horário:</strong> {openedMatch.scheduled_at ? new Date(openedMatch.scheduled_at).toLocaleString("pt-BR") : "Não informado"}</p><p><strong>Status:</strong> {openedMatch.status}</p>{isAdmin && openedMatch.status !== "cancelled" ? <><form onSubmit={saveOpenedScore} className="grid gap-2"><strong>Editar placar</strong><div className="grid grid-cols-2 gap-2"><label>Equipe A<Input type="number" min="0" step="1" value={openedScoreA} onChange={(event) => setOpenedScoreA(event.target.value)} /></label><label>Equipe B<Input type="number" min="0" step="1" value={openedScoreB} onChange={(event) => setOpenedScoreB(event.target.value)} /></label></div><Button type="submit" disabled={saving}>Salvar placar</Button></form><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => void changeOpenedStatus("start_match")} disabled={saving || openedMatch.status !== "scheduled"}><Flag /> Em andamento</Button><Button type="button" onClick={() => void changeOpenedStatus("finish_match")} disabled={saving || openedMatch.status !== "in_progress"}><Flag /> Finalizar partida</Button></div><form onSubmit={saveOpenedGoal} className="grid gap-2 border-t pt-3"><strong>Adicionar gol</strong><Select value={openedGoalTeam} onValueChange={(value) => { setOpenedGoalTeam(value); setOpenedGoalPlayer(""); }}><SelectTrigger><SelectValue placeholder="Equipe que marcou" /></SelectTrigger><SelectContent><SelectItem value={openedMatch.team_a_id}>{openedMatch.teamALabel}</SelectItem><SelectItem value={openedMatch.team_b_id}>{openedMatch.teamBLabel}</SelectItem></SelectContent></Select><Select value={openedGoalPlayer} onValueChange={setOpenedGoalPlayer}><SelectTrigger><SelectValue placeholder="Jogador que marcou" /></SelectTrigger><SelectContent>{openedPlayers.filter((player) => player.team_id === openedGoalTeam).map((player) => <SelectItem key={player.player_id} value={player.player_id}>{player.player_name_snapshot}</SelectItem>)}</SelectContent></Select><Input type="number" min="0" step="1" placeholder="Minuto (opcional)" value={openedGoalMinute} onChange={(event) => setOpenedGoalMinute(event.target.value)} /><Button type="submit" disabled={saving}>Registrar gol</Button></form><div className="grid gap-1 border-t pt-3"><strong>Gols registrados</strong>{openedGoals.length ? openedGoals.map((goal) => <p key={goal.id}>{goal.minute !== null ? `${goal.minute}' ` : ""}{openedPlayers.find((player) => player.player_id === goal.player_id)?.player_name_snapshot ?? "Jogador"} · {goal.team_id === openedMatch.team_a_id ? openedMatch.teamALabel : openedMatch.teamBLabel}</p>) : <span className="text-muted-foreground">Nenhum gol registrado.</span>}</div></> : <p><strong>Placar:</strong> {openedMatch.score_a} x {openedMatch.score_b}</p>}</div> : null}
+          {openedMatch ? (
+            <MatchDialogBody
+              match={openedMatch}
+              isAdmin={isAdmin}
+              saving={saving}
+              scoreA={openedScoreA}
+              scoreB={openedScoreB}
+              onScoreA={setOpenedScoreA}
+              onScoreB={setOpenedScoreB}
+              onSaveScore={saveOpenedScore}
+              onChangeStatus={(action) => void changeOpenedStatus(action)}
+              onCancelMatch={() => void cancelOpenedMatch()}
+              players={openedPlayers}
+              goals={openedGoals}
+              goalTeam={openedGoalTeam}
+              goalPlayer={openedGoalPlayer}
+              goalAssist={openedGoalAssist}
+              goalMinute={openedGoalMinute}
+              onGoalTeam={setOpenedGoalTeam}
+              onGoalPlayer={setOpenedGoalPlayer}
+              onGoalAssist={setOpenedGoalAssist}
+              onGoalMinute={setOpenedGoalMinute}
+              onSaveGoal={saveOpenedGoal}
+              onRemoveGoal={(goal) => void removeOpenedGoal(goal)}
+            />
+          ) : null}
         </DialogContent>
       </Dialog>
     </AppLayout>
