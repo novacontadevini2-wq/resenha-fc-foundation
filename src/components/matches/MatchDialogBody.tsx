@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MatchTimer } from "@/components/matches/MatchTimer";
 import type { MatchGoal, MatchStatus } from "@/types";
 
 export type DialogTeamPlayer = { team_id: string; player_id: string; player_name_snapshot: string };
