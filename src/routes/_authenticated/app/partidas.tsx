@@ -171,37 +171,6 @@ function MatchesPage() {
     setOpenedPlayers((players ?? []) as TeamPlayer[]);
   }
 
-  async function saveOpenedScore(event: React.FormEvent) {
-    event.preventDefault();
-    if (!openedMatch) return;
-    const scoreA = Number(openedScoreA);
-    const scoreB = Number(openedScoreB);
-    if (!Number.isInteger(scoreA) || !Number.isInteger(scoreB) || scoreA < 0 || scoreB < 0) {
-      toast.error("Informe placares inteiros maiores ou iguais a zero.");
-      return;
-    }
-
-    setSaving(true);
-    const { error: scoreError } = await supabase.rpc("set_match_score", {
-      p_match_id: openedMatch.id,
-      p_score_a: scoreA,
-      p_score_b: scoreB,
-    });
-    setSaving(false);
-    if (scoreError) {
-      toast.error(scoreError.message);
-      return;
-    }
-    setMatches((current) =>
-      current.map((match) =>
-        match.id === openedMatch.id ? { ...match, score_a: scoreA, score_b: scoreB } : match,
-      ),
-    );
-    setOpenedMatch((current) =>
-      current ? { ...current, score_a: scoreA, score_b: scoreB } : current,
-    );
-    toast.success("Placar atualizado.");
-  }
 
   async function saveOpenedGoal(event: React.FormEvent) {
     event.preventDefault();
@@ -565,11 +534,6 @@ function MatchesPage() {
               match={openedMatch}
               isAdmin={isAdmin}
               saving={saving}
-              scoreA={openedScoreA}
-              scoreB={openedScoreB}
-              onScoreA={setOpenedScoreA}
-              onScoreB={setOpenedScoreB}
-              onSaveScore={saveOpenedScore}
               onChangeStatus={(action) => void changeOpenedStatus(action)}
               onCancelMatch={() => void cancelOpenedMatch()}
               players={openedPlayers}
