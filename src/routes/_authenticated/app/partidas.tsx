@@ -260,8 +260,13 @@ function MatchesPage() {
       return;
     }
     const status: MatchStatus = action === "start_match" ? "in_progress" : "finished";
-    setOpenedMatch((current) => current ? { ...current, status } : current);
-    setMatches((current) => current.map((match) => match.id === openedMatch.id ? { ...match, status } : match));
+    const stamp = new Date().toISOString();
+    const patch = (match: MatchCardData | Match) =>
+      action === "start_match"
+        ? { ...match, status, started_at: match.started_at ?? stamp }
+        : { ...match, status, finished_at: stamp };
+    setOpenedMatch((current) => current ? (patch(current) as typeof current) : current);
+    setMatches((current) => current.map((match) => match.id === openedMatch.id ? patch(match) as typeof match : match));
     toast.success(action === "start_match" ? "Partida em andamento." : "Partida finalizada.");
   }
 
