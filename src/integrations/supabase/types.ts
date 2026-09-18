@@ -908,6 +908,10 @@ export type Database = {
         Returns: undefined
       }
       cancel_match: { Args: { p_match_id: string }; Returns: undefined }
+      claim_player_profile: {
+        Args: { p_player_id: string }
+        Returns: undefined
+      }
       confirm_draw: { Args: { p_draw_id: string }; Returns: undefined }
       create_match: {
         Args: {
