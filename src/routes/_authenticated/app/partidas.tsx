@@ -130,6 +130,38 @@ function MatchesPage() {
     void loadMatches();
   }, []);
 
+  useEffect(() => {
+    const channel = supabase
+      .channel("matches-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => {
+        void loadMatches();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "match_goals" }, () => {
+        void loadMatches();
+        setOpenedMatch((current) => {
+          if (current) void refreshOpenedDetails(current);
+          return current;
+        });
+      })
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, []);
+
+  async function refreshOpenedDetails(match: MatchCardData) {
+    const [{ data: goals }, { data: players }] = await Promise.all([
+      supabase.from("match_goals").select("*").eq("match_id", match.id).order("created_at"),
+      supabase
+        .from("draw_team_players")
+        .select("team_id, player_id, player_name_snapshot")
+        .eq("draw_id", match.draw_id)
+        .in("team_id", [match.team_a_id, match.team_b_id]),
+    ]);
+    setOpenedGoals((goals ?? []) as MatchGoal[]);
+    setOpenedPlayers((players ?? []) as TeamPlayer[]);
+  }
+
   const selectedDraws = useMemo(
     () => draws.filter((draw) => !roundId || draw.round_id === roundId),
     [draws, roundId],
@@ -138,18 +170,34 @@ function MatchesPage() {
     () => teams.filter((team) => team.draw_id === drawId),
     [teams, drawId],
   );
+  const currentRoundId = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const upcoming = rounds.find(
+      (round) => round.status !== "cancelled" && round.scheduled_date >= today,
+    );
+    const past = [...rounds]
+      .filter((round) => round.status !== "cancelled")
+      .sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date))[0];
+    return upcoming?.id ?? past?.id ?? null;
+  }, [rounds]);
+
   const visibleMatches = useMemo(
     () =>
       matches.filter((match) => {
         const date =
           match.scheduled_at?.slice(0, 10) ?? match.roundLabel.split("/").reverse().join("-");
+        const currentOnly =
+          isAdmin || dateFilter || roundFilter !== "all"
+            ? true
+            : !currentRoundId || match.round_id === currentRoundId;
         return (
+          currentOnly &&
           (roundFilter === "all" || match.round_id === roundFilter) &&
           (statusFilter === "all" || match.status === statusFilter) &&
           (!dateFilter || date === dateFilter)
         );
       }),
-    [dateFilter, matches, roundFilter, statusFilter],
+    [currentRoundId, dateFilter, isAdmin, matches, roundFilter, statusFilter],
   );
 
   async function openMatch(match: MatchCardData) {
@@ -457,8 +505,13 @@ function MatchesPage() {
           </form>
         </SectionCard>
       ) : null}
+      {!isAdmin ? (
+        <p className="text-meta mb-3">
+          Mostrando as partidas da rodada atual. Para ver rodadas anteriores, filtre por data.
+        </p>
+      ) : null}
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
-        <label className="grid gap-1 text-sm font-medium text-navy">
+        <label className={isAdmin ? "grid gap-1 text-sm font-medium text-navy" : "hidden"}>
           Rodada
           <Select value={roundFilter} onValueChange={setRoundFilter}>
             <SelectTrigger>

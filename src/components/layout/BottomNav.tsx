@@ -15,9 +15,9 @@ const adminItems = [
 const playerItems = [
   { to: "/app/principal", label: "Principal", icon: Home },
   { to: "/app/meu-perfil", label: "Meu jogo", icon: User },
+  { to: "/app/sorteio", label: "Sorteio", icon: Shuffle },
   { to: "/app/partidas", label: "Partidas", icon: Swords },
   { to: "/app/jogadores", label: "Elenco", icon: Users },
-  { to: "/app/torneios", label: "Torneio", icon: Trophy },
 ] as const;
 
 export function BottomNav() {

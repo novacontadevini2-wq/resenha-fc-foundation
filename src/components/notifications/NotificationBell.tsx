@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +23,13 @@ export function NotificationBell() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
-        () => void load(),
+        (payload) => {
+          const row = payload.new as { title?: string; message?: string } | null;
+          if (payload.eventType === "INSERT" && row?.message) {
+            toast.success(row.title ?? "Nova notificação", { description: row.message });
+          }
+          void load();
+        },
       )
       .subscribe();
     return () => {

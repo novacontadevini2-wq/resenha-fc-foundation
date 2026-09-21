@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link , redirect } from "@tanstack/react-router";
 import { ArrowLeft, Crown, Link2, Shield, Target, Trophy, Unlink, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -41,6 +41,15 @@ type DrawLabel = { id: string; round_id: string };
 type LabeledTeam = MatchTeam & { label: string };
 
 export const Route = createFileRoute("/_authenticated/app/torneios/$id")({
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) throw redirect({ to: "/login" });
+    const { data: admin } = await supabase.rpc("has_role", {
+      _user_id: data.user.id,
+      _role: "admin",
+    });
+    if (!admin) throw redirect({ to: "/app/principal" });
+  },
   head: () => ({
     meta: [
       { title: "Detalhe do torneio | Resenha FC" },

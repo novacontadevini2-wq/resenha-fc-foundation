@@ -32,7 +32,15 @@ function isInstalledNow(): boolean {
   return false;
 }
 
-export function InstallAppButton({ variant = "button" }: { variant?: "button" | "tile" }) {
+let autoPromptShown = false;
+
+export function InstallAppButton({
+  variant = "button",
+  auto = false,
+}: {
+  variant?: "button" | "tile";
+  auto?: boolean;
+}) {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -61,6 +69,17 @@ export function InstallAppButton({ variant = "button" }: { variant?: "button" | 
       window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);
+
+  useEffect(() => {
+    if (!auto || !ready || installed || autoPromptShown) return;
+    if (detectPlatform() === "desktop") return;
+    autoPromptShown = true;
+    const timer = window.setTimeout(() => {
+      if (deferred) void deferred.prompt();
+      else setDialogOpen(true);
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [auto, ready, installed, deferred]);
 
   if (!ready || installed) return null;
 
