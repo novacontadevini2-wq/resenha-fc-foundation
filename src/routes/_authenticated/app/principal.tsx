@@ -17,7 +17,8 @@ export const Route = createFileRoute("/_authenticated/app/principal")({
 });
 
 function PrincipalPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const [savingPresence, setSavingPresence] = useState(false);
   const [nextRound, setNextRound] = useState<Round | null>(null);
   const [confirmedCount, setConfirmedCount] = useState(0);
   const [personal, setPersonal] = useState<{
