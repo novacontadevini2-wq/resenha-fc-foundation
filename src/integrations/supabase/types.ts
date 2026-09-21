@@ -1034,6 +1034,10 @@ export type Database = {
         Args: { p_round_id: string; p_status: string }
         Returns: undefined
       }
+      set_round_participation: {
+        Args: { p_player_id: string; p_round_id: string; p_status: string }
+        Returns: string
+      }
       set_tournament_status: {
         Args: { p_status: string; p_tournament_id: string }
         Returns: undefined
