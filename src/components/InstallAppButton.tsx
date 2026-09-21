@@ -32,7 +32,15 @@ function isInstalledNow(): boolean {
   return false;
 }
 
-export function InstallAppButton({ variant = "button" }: { variant?: "button" | "tile" }) {
+let autoPromptShown = false;
+
+export function InstallAppButton({
+  variant = "button",
+  auto = false,
+}: {
+  variant?: "button" | "tile";
+  auto?: boolean;
+}) {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
