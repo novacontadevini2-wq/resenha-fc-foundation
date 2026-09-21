@@ -70,6 +70,17 @@ export function InstallAppButton({
     };
   }, []);
 
+  useEffect(() => {
+    if (!auto || !ready || installed || autoPromptShown) return;
+    if (detectPlatform() === "desktop") return;
+    autoPromptShown = true;
+    const timer = window.setTimeout(() => {
+      if (deferred) void deferred.prompt();
+      else setDialogOpen(true);
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [auto, ready, installed, deferred]);
+
   if (!ready || installed) return null;
 
   async function handleClick() {
