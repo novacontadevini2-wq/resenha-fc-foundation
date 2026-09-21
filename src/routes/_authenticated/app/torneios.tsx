@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link , redirect } from "@tanstack/react-router";
 import { Pencil, Plus, Trash2, Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -27,6 +27,15 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Season, Tournament } from "@/types";
 
 export const Route = createFileRoute("/_authenticated/app/torneios")({
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) throw redirect({ to: "/login" });
+    const { data: admin } = await supabase.rpc("has_role", {
+      _user_id: data.user.id,
+      _role: "admin",
+    });
+    if (!admin) throw redirect({ to: "/app/principal" });
+  },
   head: () => ({
     meta: [
       { title: "Torneios | Resenha FC" },
