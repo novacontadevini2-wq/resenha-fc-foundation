@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/app/principal")({
 function PrincipalPage() {
   const { user, isAdmin } = useAuth();
   const [savingPresence, setSavingPresence] = useState(false);
-  const [venue, setVenue] = useState({ name: CLUB.venue.name, address: CLUB.venue.address });
+  const [venue, setVenue] = useState<{ name: string; address: string }>({ name: CLUB.venue.name, address: CLUB.venue.address });
   const [nextRound, setNextRound] = useState<Round | null>(null);
   const [confirmedCount, setConfirmedCount] = useState(0);
   const [personal, setPersonal] = useState<{
