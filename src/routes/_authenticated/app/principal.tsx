@@ -3,7 +3,10 @@ import { InstallAppButton } from "@/components/InstallAppButton";
 import { BarChart3, CalendarDays, Shuffle, Trophy, User, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { toast } from "sonner";
+
 import { AppLayout } from "@/components/layout/AppLayout";
+import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
 import { CLUB } from "@/lib/club-config";
 import { NextRoundCard } from "@/components/rounds/NextRoundCard";
