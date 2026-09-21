@@ -22,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/app/principal")({
 function PrincipalPage() {
   const { user, isAdmin } = useAuth();
   const [savingPresence, setSavingPresence] = useState(false);
+  const [venue, setVenue] = useState({ name: CLUB.venue.name, address: CLUB.venue.address });
   const [nextRound, setNextRound] = useState<Round | null>(null);
   const [confirmedCount, setConfirmedCount] = useState(0);
   const [personal, setPersonal] = useState<{
@@ -37,6 +38,14 @@ function PrincipalPage() {
   >([]);
   useEffect(() => {
     async function loadNextRound() {
+      const { data: settingsData } = await supabase.from("club_settings").select("key, value");
+      if (settingsData?.length) {
+        const map = Object.fromEntries(settingsData.map((item) => [item.key, String(item.value ?? "")]));
+        setVenue({
+          name: map["arena"] || CLUB.venue.name,
+          address: map["address"] || CLUB.venue.address,
+        });
+      }
       const { data: announcementData } = await supabase
         .from("announcements")
         .select("id, title, content")
@@ -163,8 +172,8 @@ function PrincipalPage() {
           )}
           <QuickLink to="/app/meu-perfil" icon={User} label="Meu jogo" />
           <SectionCard title="Local" icon={Trophy}>
-            <p className="text-lg font-semibold text-navy">{CLUB.venue.name}</p>
-            <p className="text-meta mt-1">{CLUB.venue.address}</p>
+            <p className="text-lg font-semibold text-navy">{venue.name}</p>
+            <p className="text-meta mt-1">{venue.address}</p>
           </SectionCard>
           <QuickLink to="/app/rodadas" icon={CalendarDays} label="Rodadas" />
           <div className="sm:hidden">
@@ -194,8 +203,8 @@ function PrincipalPage() {
           </SectionCard>
         )}
         <SectionCard title="Local" icon={Trophy}>
-          <p className="text-lg font-semibold text-navy">{CLUB.venue.name}</p>
-          <p className="text-meta mt-1">{CLUB.venue.address}</p>
+          <p className="text-lg font-semibold text-navy">{venue.name}</p>
+          <p className="text-meta mt-1">{venue.address}</p>
         </SectionCard>
       </div>
       {announcements.length ? (
