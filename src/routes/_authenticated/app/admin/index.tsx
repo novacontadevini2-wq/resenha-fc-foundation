@@ -3,6 +3,7 @@ import {
   Activity,
   BarChart3,
   CalendarDays,
+  CheckCircle2,
   ClipboardList,
   Goal,
   KeyRound,
@@ -205,6 +206,7 @@ function AdminDashboard() {
             <QuickLink to="/app/sorteio" icon={BarChart3} label="Realizar sorteio" />
             <QuickLink to="/app/partidas" icon={Swords} label="Nova partida" />
             <QuickLink to="/app/admin/avisos" icon={Megaphone} label="Novo aviso" />
+            <QuickLink to="/app/admin/presencas" icon={CheckCircle2} label="Confirmar presenças" />
           </div>
         </SectionCard>
       </div>
@@ -255,7 +257,8 @@ function QuickLink({
     | "/app/admin/relatorios"
     | "/app/admin/auditoria"
     | "/app/admin/configuracoes"
-    | "/app/admin/acessos";
+    | "/app/admin/acessos"
+    | "/app/admin/presencas";
   icon: typeof Users;
   label: string;
 }) {
