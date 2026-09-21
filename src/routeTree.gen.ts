@@ -28,6 +28,7 @@ import { Route as AuthenticatedAppAdminAcessosRouteImport } from './routes/_auth
 import { Route as AuthenticatedAppAdminAuditoriaRouteImport } from './routes/_authenticated/app/admin/auditoria'
 import { Route as AuthenticatedAppAdminAvisosRouteImport } from './routes/_authenticated/app/admin/avisos'
 import { Route as AuthenticatedAppAdminConfiguracoesRouteImport } from './routes/_authenticated/app/admin/configuracoes'
+import { Route as AuthenticatedAppAdminPresencasRouteImport } from './routes/_authenticated/app/admin/presencas'
 import { Route as AuthenticatedAppAdminRelatoriosRouteImport } from './routes/_authenticated/app/admin/relatorios'
 import { Route as AuthenticatedAppAdminRodadasRouteImport } from './routes/_authenticated/app/admin/rodadas'
 import { Route as AuthenticatedAppAdminTemporadasRouteImport } from './routes/_authenticated/app/admin/temporadas'
@@ -142,6 +143,12 @@ const AuthenticatedAppAdminConfiguracoesRoute =
     path: '/app/admin/configuracoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAppAdminPresencasRoute =
+  AuthenticatedAppAdminPresencasRouteImport.update({
+    id: '/app/admin/presencas',
+    path: '/app/admin/presencas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppAdminRelatoriosRoute =
   AuthenticatedAppAdminRelatoriosRouteImport.update({
     id: '/app/admin/relatorios',
@@ -203,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/auditoria': typeof AuthenticatedAppAdminAuditoriaRoute
   '/app/admin/avisos': typeof AuthenticatedAppAdminAvisosRoute
   '/app/admin/configuracoes': typeof AuthenticatedAppAdminConfiguracoesRoute
+  '/app/admin/presencas': typeof AuthenticatedAppAdminPresencasRoute
   '/app/admin/relatorios': typeof AuthenticatedAppAdminRelatoriosRoute
   '/app/admin/rodadas': typeof AuthenticatedAppAdminRodadasRoute
   '/app/admin/temporadas': typeof AuthenticatedAppAdminTemporadasRoute
@@ -230,6 +238,7 @@ export interface FileRoutesByTo {
   '/app/admin/auditoria': typeof AuthenticatedAppAdminAuditoriaRoute
   '/app/admin/avisos': typeof AuthenticatedAppAdminAvisosRoute
   '/app/admin/configuracoes': typeof AuthenticatedAppAdminConfiguracoesRoute
+  '/app/admin/presencas': typeof AuthenticatedAppAdminPresencasRoute
   '/app/admin/relatorios': typeof AuthenticatedAppAdminRelatoriosRoute
   '/app/admin/rodadas': typeof AuthenticatedAppAdminRodadasRoute
   '/app/admin/temporadas': typeof AuthenticatedAppAdminTemporadasRoute
@@ -259,6 +268,7 @@ export interface FileRoutesById {
   '/_authenticated/app/admin/auditoria': typeof AuthenticatedAppAdminAuditoriaRoute
   '/_authenticated/app/admin/avisos': typeof AuthenticatedAppAdminAvisosRoute
   '/_authenticated/app/admin/configuracoes': typeof AuthenticatedAppAdminConfiguracoesRoute
+  '/_authenticated/app/admin/presencas': typeof AuthenticatedAppAdminPresencasRoute
   '/_authenticated/app/admin/relatorios': typeof AuthenticatedAppAdminRelatoriosRoute
   '/_authenticated/app/admin/rodadas': typeof AuthenticatedAppAdminRodadasRoute
   '/_authenticated/app/admin/temporadas': typeof AuthenticatedAppAdminTemporadasRoute
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/app/admin/auditoria'
     | '/app/admin/avisos'
     | '/app/admin/configuracoes'
+    | '/app/admin/presencas'
     | '/app/admin/relatorios'
     | '/app/admin/rodadas'
     | '/app/admin/temporadas'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/app/admin/auditoria'
     | '/app/admin/avisos'
     | '/app/admin/configuracoes'
+    | '/app/admin/presencas'
     | '/app/admin/relatorios'
     | '/app/admin/rodadas'
     | '/app/admin/temporadas'
@@ -343,6 +355,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/admin/auditoria'
     | '/_authenticated/app/admin/avisos'
     | '/_authenticated/app/admin/configuracoes'
+    | '/_authenticated/app/admin/presencas'
     | '/_authenticated/app/admin/relatorios'
     | '/_authenticated/app/admin/rodadas'
     | '/_authenticated/app/admin/temporadas'
@@ -496,6 +509,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAdminConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/app/admin/presencas': {
+      id: '/_authenticated/app/admin/presencas'
+      path: '/app/admin/presencas'
+      fullPath: '/app/admin/presencas'
+      preLoaderRoute: typeof AuthenticatedAppAdminPresencasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/app/admin/relatorios': {
       id: '/_authenticated/app/admin/relatorios'
       path: '/app/admin/relatorios'
@@ -618,6 +638,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppAdminAuditoriaRoute: typeof AuthenticatedAppAdminAuditoriaRoute
   AuthenticatedAppAdminAvisosRoute: typeof AuthenticatedAppAdminAvisosRoute
   AuthenticatedAppAdminConfiguracoesRoute: typeof AuthenticatedAppAdminConfiguracoesRoute
+  AuthenticatedAppAdminPresencasRoute: typeof AuthenticatedAppAdminPresencasRoute
   AuthenticatedAppAdminRelatoriosRoute: typeof AuthenticatedAppAdminRelatoriosRoute
   AuthenticatedAppAdminRodadasRoute: typeof AuthenticatedAppAdminRodadasRoute
   AuthenticatedAppAdminTemporadasRoute: typeof AuthenticatedAppAdminTemporadasRoute
@@ -639,6 +660,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppAdminAvisosRoute: AuthenticatedAppAdminAvisosRoute,
   AuthenticatedAppAdminConfiguracoesRoute:
     AuthenticatedAppAdminConfiguracoesRoute,
+  AuthenticatedAppAdminPresencasRoute: AuthenticatedAppAdminPresencasRoute,
   AuthenticatedAppAdminRelatoriosRoute: AuthenticatedAppAdminRelatoriosRoute,
   AuthenticatedAppAdminRodadasRoute: AuthenticatedAppAdminRodadasRoute,
   AuthenticatedAppAdminTemporadasRoute: AuthenticatedAppAdminTemporadasRoute,
