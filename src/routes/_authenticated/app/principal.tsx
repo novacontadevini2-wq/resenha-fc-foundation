@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppLayout } from "@/components/layout/AppLayout";
+import type { DrawPlayerSnapshot } from "@/components/draws/TeamCard";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
 import { CLUB } from "@/lib/club-config";
@@ -15,9 +16,26 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Match, MatchAssist, MatchGoal, Player, Round } from "@/types";
 
 export const Route = createFileRoute("/_authenticated/app/principal")({
-  head: () => ({ meta: [{ title: "Principal | Resenha FC" }] }),
+  head: () => ({
+    meta: [
+      { title: "Informações | Resenha FC" },
+      {
+        name: "description",
+        content: "Informações da próxima pelada, local, rodada e times oficiais do Resenha FC.",
+      },
+      { property: "og:title", content: "Informações | Resenha FC" },
+      {
+        property: "og:description",
+        content: "Informações da próxima pelada, local, rodada e times oficiais do Resenha FC.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: PrincipalPage,
 });
+
+type OfficialTeam = { id: string; team_number: number };
 
 function PrincipalPage() {
   const { user, isAdmin } = useAuth();
@@ -25,6 +43,8 @@ function PrincipalPage() {
   const [venue, setVenue] = useState<{ name: string; address: string }>({ name: CLUB.venue.name, address: CLUB.venue.address });
   const [nextRound, setNextRound] = useState<Round | null>(null);
   const [confirmedCount, setConfirmedCount] = useState(0);
+  const [officialTeams, setOfficialTeams] = useState<OfficialTeam[]>([]);
+  const [officialTeamPlayers, setOfficialTeamPlayers] = useState<DrawPlayerSnapshot[]>([]);
   const [personal, setPersonal] = useState<{
     player: Player;
     status: string;
@@ -65,6 +85,30 @@ function PrincipalPage() {
         .maybeSingle();
       if (!data) return;
       setNextRound(data as Round);
+      const { data: officialDraw } = await supabase
+        .from("draws")
+        .select("id")
+        .eq("round_id", data.id)
+        .eq("status", "confirmed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (officialDraw) {
+        const { data: teamData } = await supabase
+          .from("draw_teams")
+          .select("id, team_number")
+          .eq("draw_id", officialDraw.id)
+          .order("team_number");
+        const nextTeams = (teamData ?? []) as OfficialTeam[];
+        setOfficialTeams(nextTeams);
+        if (nextTeams.length) {
+          const { data: playerSnapshots } = await supabase
+            .from("draw_team_players")
+            .select("*")
+            .in("team_id", nextTeams.map((team) => team.id));
+          setOfficialTeamPlayers((playerSnapshots ?? []) as DrawPlayerSnapshot[]);
+        }
+      }
       const { count } = await supabase
         .from("round_players")
         .select("id", { count: "exact", head: true })
@@ -145,7 +189,7 @@ function PrincipalPage() {
   if (!isAdmin) {
     return (
       <AppLayout
-        title="Principal"
+        title="Informações"
         subtitle={`${CLUB.schedule.dayLabel} · ${CLUB.schedule.timeLabel}`}
       >
         <div className="grid gap-4">
@@ -175,6 +219,30 @@ function PrincipalPage() {
             <p className="text-lg font-semibold text-navy">{venue.name}</p>
             <p className="text-meta mt-1">{venue.address}</p>
           </SectionCard>
+          <section aria-labelledby="official-teams-title">
+            <div className="mb-3 flex items-end justify-between gap-3">
+              <div>
+                <h2 id="official-teams-title" className="text-subtitle">Times sorteados</h2>
+                <p className="text-meta mt-1">Times oficiais da próxima pelada.</p>
+              </div>
+            </div>
+            {officialTeams.length ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {officialTeams.map((team) => (
+                  <OfficialTeamCard
+                    key={team.id}
+                    teamNumber={team.team_number}
+                    players={officialTeamPlayers.filter((player) => player.team_id === team.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="card-surface p-4">
+                <p className="font-semibold text-navy">Times ainda não divulgados.</p>
+                <p className="text-meta mt-1">O resultado oficial aparecerá aqui após a confirmação.</p>
+              </div>
+            )}
+          </section>
           <QuickLink to="/app/rodadas" icon={CalendarDays} label="Rodadas" />
           <div className="sm:hidden">
             <InstallAppButton variant="tile" />
@@ -265,6 +333,48 @@ function PrincipalPage() {
         </div>
       </section>
     </AppLayout>
+  );
+}
+
+function OfficialTeamCard({
+  teamNumber,
+  players,
+}: {
+  teamNumber: number;
+  players: DrawPlayerSnapshot[];
+}) {
+  return (
+    <article className="card-surface min-w-0 p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h3 className="font-display text-lg font-bold text-navy">Time {teamNumber}</h3>
+        <span className="text-xs font-semibold text-orange">
+          {players.length} jogador{players.length === 1 ? "" : "es"}
+        </span>
+      </div>
+      <ul className="grid gap-2">
+        {players.map((player) => (
+          <li key={player.player_id} className="flex min-w-0 items-center gap-3">
+            <span className="size-9 shrink-0 overflow-hidden rounded-full bg-accent">
+              {player.photo_url_snapshot ? (
+                <img
+                  src={player.photo_url_snapshot}
+                  alt=""
+                  className="size-full object-cover"
+                />
+              ) : (
+                <span className="flex size-full items-center justify-center text-xs font-bold text-navy">
+                  {player.player_name_snapshot.slice(0, 2).toUpperCase()}
+                </span>
+              )}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-navy">
+              {player.player_name_snapshot}
+            </span>
+            <span className="text-meta text-xs">{player.position_code_snapshot ?? ""}</span>
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }
 

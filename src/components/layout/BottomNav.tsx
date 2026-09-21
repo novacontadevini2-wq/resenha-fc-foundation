@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Shield, Shuffle, Swords, Trophy, User, Users } from "lucide-react";
+import { BarChart3, Home, Shield, Shuffle, Swords, Trophy, User, Users } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -13,9 +13,9 @@ const adminItems = [
 ] as const;
 
 const playerItems = [
-  { to: "/app/principal", label: "Principal", icon: Home },
   { to: "/app/meu-perfil", label: "Meu jogo", icon: User },
-  { to: "/app/sorteio", label: "Sorteio", icon: Shuffle },
+  { to: "/app/principal", label: "Informações", icon: Home },
+  { to: "/app/rankings", label: "Rankings", icon: BarChart3 },
   { to: "/app/partidas", label: "Partidas", icon: Swords },
   { to: "/app/jogadores", label: "Elenco", icon: Users },
 ] as const;
